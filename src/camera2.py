@@ -1,19 +1,25 @@
 from picamera2 import Picamera2
+from libcamera import controls
 import cv2
 import numpy as np
 
-import configloading
 import logwrite
+import constants
 
 class Camera():
     def __init__(self):
         try:
-            config = configloading.Config_reader()
-            height = config.reader("camera","height","intenger")
-            weight = config.reader("camera","weight","intenger")
             self.log = logwrite.MyLogging()
             self.picam = Picamera2()
-            self.picam.configure(self.picam.create_still_configuration(main={"format":"RGB888","size":(weight,height)}))
+            self.picam.configure(self.picam.create_still_configuration(main={"format":"RGB888","size":(constants.WIDTH,constants.HEIGHT)}))
+            self.picam.set_controls(
+                {
+                    "AeConstraintMode":controls.AeConstraintModeEnum.Highlight, #露光モード：ハイライト
+                    "AeExposureMode": controls.AeExposureModeEnum.Normal,       # 通常露光
+                    "AeMeteringMode": controls.AeMeteringModeEnum.Matrix        # 全体を考慮した測光
+                }
+            )
+
         except Exception as e:
             self.log.write("An error occurred during camera initialization","ERROR")
             raise

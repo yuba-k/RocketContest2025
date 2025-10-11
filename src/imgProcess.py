@@ -4,6 +4,8 @@ import numpy as np
 import time
 import os
 
+import constants
+
 def opening(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
@@ -32,6 +34,59 @@ def split_by_size(img, size):
     return [chunk for row in np.array_split(img, rows, axis=0)
                   for chunk in np.array_split(row, cols, axis=1)]
 
+def get_target_point(img):
+    coordinates_x = {}
+    coordinates_y = {}
+
+    temp = get_coordinates(img)
+    coordinates_x["top"] = temp[1][0]
+    coordinates_y["top"] = temp[0][0]
+    img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+
+    temp = list(temp)
+    temp.clear()
+    temp = get_coordinates(img)
+    coordinates_x["left"] = temp[0][0]
+    coordinates_y["left"] = abs(int(constants.HEIGHT) - temp[1][0])
+    img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+    img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+
+    temp = list(temp)
+    temp.clear()
+    temp = get_coordinates(img)
+    coordinates_x["right"] = abs(int(constants.width) - temp[0][0])
+    coordinates_y["right"] = temp[1][0]
+    img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+
+    cv2.line(img,(coordinates_x["top"],coordinates_y["top"]),(coordinates_x["right"],coordinates_y["right"]),(100,0,0),thickness=10,lineType=cv2.LINE_8,shift=0)
+    cv2.imwrite("../img/result/line_1.jpg",img)
+    cv2.line(img,(coordinates_x["right"],coordinates_y["right"]),(coordinates_x["left"],coordinates_y["left"]),(100,0,0),thickness=10,lineType=cv2.LINE_8,shift=0)
+    cv2.imwrite("../img/result/line_2.jpg",img)
+    cv2.line(img,(coordinates_x["left"],coordinates_y["left"]),(coordinates_x["top"],coordinates_y["top"]),(100,0,0),thickness=10,lineType=cv2.LINE_8,shift=0)
+
+    for i,j in coordinates_x.items():
+        print(f"{i}_x:{j}")
+    for i,j in coordinates_y.items():
+        print(f"{i}_y:{j}")
+
+    cv2.imwrite(f"../img/result/result.jpg",img)
+
+    if  (abs(coordinates_x["left"] - coordinates_x["right"]))>=constants.width*0.6:
+        return "goal"
+    return get_center_point(coordinates_x["left"],coordinates_x["right"],coordinates_x["top"])
+
+def get_center_point(right,left,top):
+    result = ((right+left)/2 + top)//2
+    if result < constants.width//3:
+        return "left"
+    elif result < constants.width//3*2:
+        return "forward"
+    else:
+        return "right"
+        
+def get_coordinates(img):
+    white_pixels = np.where(img == 255)
+    return white_pixels
 
 def merge_chunks(chunks, original_shape, size):
     """分割した画像チャンクを1枚に戻す"""
@@ -74,8 +129,9 @@ def main():
 
         merge = merge_chunks(rsImg,img.shape,chunk)
 
+        print(get_target_point(merge))
+
         cv2.imwrite(f"img/result-{fname}.png",merge)
 
 if __name__ == "__main__":
     main()
-

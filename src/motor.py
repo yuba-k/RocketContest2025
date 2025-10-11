@@ -1,13 +1,19 @@
 import RPi.GPIO as GPIO
 import time
 import configloading
+import board
+from adafruit_lsm6ds.lsm6ds33 import LSM6DS33
 
 import logwrite
+import gyro_angle as gyro
 
 class Motor():
     def __init__(self):
         self.config = configloading.Config_reader()
         self.log = logwrite.MyLogging()
+
+        i2c = board.I2C()
+        self.sensor = LSM6DS33(i2c)#ジャイロセンサ
 
         self.duty = self.config.reader("MOTOR","duty","intenger")
         self.right_pwm = self.config.reader("MOTOR","right_pwm","intenger")
@@ -35,16 +41,22 @@ class Motor():
         self.right.start(0)
         self.left.start(0)
 
-    def move(self,direction,moter_active_time,duty = None):
+    def move(self,direction,degree,duty = None):
         if duty == None:
             duty = self.duty
 
+        gyro_z = 0
+        dt = 0.05
+
         self.adjust_duty_cycle(direction,duty)
 
-        stop_time = time.time() + moter_active_time
-        while time.time() < stop_time:
+        while True:
+            gyro_z += self.sensor.gyro
             self.right.ChangeDutyCycle(self.right_duty)
             self.left.ChangeDutyCycle(self.left_duty)
+            if(degree >= gyro_z):
+                break
+            time.sleep(dt)
 
         self.right.ChangeDutyCycle(0)
         self.left.ChangeDutyCycle(0)
