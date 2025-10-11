@@ -29,9 +29,9 @@ class FMemitter():
         self.sendDataViaI2C(string)
         
 def main():
+    fm = FMemitter()
     while(True):
         string = input(">>>")
-        fm = FMemitter()
         fm.transmitFMMessage(string)
 
 if __name__ == "__main__":
