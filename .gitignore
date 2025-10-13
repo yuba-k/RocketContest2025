@@ -1,5 +1,6 @@
 画像サンプル
 src/test
+src/__pycache__
 img/
 .vscode/
 manual/*.docx
