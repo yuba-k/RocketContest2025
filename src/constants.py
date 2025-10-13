@@ -1,5 +1,7 @@
 from typing import Final
-from configloading import Config_reader as confload
+import configloading
+
+confload = configloading.Config_reader()
 
 ST_PIN: Final = confload.reader("start","st_pin","intenger")
 
