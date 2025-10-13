@@ -54,7 +54,7 @@ def get_target_point(img):
     temp = list(temp)
     temp.clear()
     temp = get_coordinates(img)
-    coordinates_x["right"] = abs(int(constants.width) - temp[0][0])
+    coordinates_x["right"] = abs(int(constants.WIDTH) - temp[0][0])
     coordinates_y["right"] = temp[1][0]
     img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
 
@@ -71,15 +71,15 @@ def get_target_point(img):
 
     cv2.imwrite(f"../img/result/result.jpg",img)
 
-    if  (abs(coordinates_x["left"] - coordinates_x["right"]))>=constants.width*0.6:
+    if  (abs(coordinates_x["left"] - coordinates_x["right"]))>=constants.WIDTH*0.6:
         return "goal"
     return get_center_point(coordinates_x["left"],coordinates_x["right"],coordinates_x["top"])
 
 def get_center_point(right,left,top):
     result = ((right+left)/2 + top)//2
-    if result < constants.width//3:
+    if result < constants.WIDTH//3:
         return "left"
-    elif result < constants.width//3*2:
+    elif result < constants.WIDTH//3*2:
         return "forward"
     else:
         return "right"
@@ -111,7 +111,7 @@ def merge_chunks(chunks, original_shape, size):
     return merged
 
 def main():
-    path = "img/original/"
+    path = "../img/original/"
     files = os.listdir(path)
     for fname in files:
         img = cv2.imread(path+fname)
@@ -125,13 +125,13 @@ def main():
 
         os.makedirs("img", exist_ok=True)
         for i, im in enumerate(rsImg):
-            cv2.imwrite(f"img/chatgpt{i}.png", im)
+            cv2.imwrite(f"../img/chatgpt{i}.png", im)
 
         merge = merge_chunks(rsImg,img.shape,chunk)
 
-        print(get_target_point(merge))
+        #print(get_target_point(merge))
 
-        cv2.imwrite(f"img/result-{fname}.png",merge)
+        cv2.imwrite(f"../img/result/result-{fname}.png",merge)
 
 if __name__ == "__main__":
     main()
