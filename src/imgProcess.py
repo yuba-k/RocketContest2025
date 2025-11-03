@@ -3,8 +3,8 @@ import cv2
 import numpy as np
 import time
 import os
-
 import constants
+
 
 def opening(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -34,46 +34,38 @@ def split_by_size(img, size):
     return [chunk for row in np.array_split(img, rows, axis=0)
                   for chunk in np.array_split(row, cols, axis=1)]
 
-def get_target_point(img):
-    coordinates_x = {}
-    coordinates_y = {}
+def get_target_points(img,original):
+    try:
+        coordinates_x = {}
+        coordinates_y = {}
 
-    temp = get_coordinates(img)
-    coordinates_x["top"] = temp[1][0]
-    coordinates_y["top"] = temp[0][0]
-    img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+        temp = get_coordinates(img)
+        coordinates_x["top"] = temp[1][0]
+        coordinates_y["top"] = temp[0][0]
+        img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
 
-    temp = list(temp)
-    temp.clear()
-    temp = get_coordinates(img)
-    coordinates_x["left"] = temp[0][0]
-    coordinates_y["left"] = abs(int(constants.HEIGHT) - temp[1][0])
-    img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
-    img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+        temp = list(temp)
+        temp.clear()
+        temp = get_coordinates(img)
+        coordinates_x["left"] = temp[0][0]
+        coordinates_y["left"] = abs(constants.HEIGHT - temp[1][0])
+        img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+        img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
 
-    temp = list(temp)
-    temp.clear()
-    temp = get_coordinates(img)
-    coordinates_x["right"] = abs(int(constants.WIDTH) - temp[0][0])
-    coordinates_y["right"] = temp[1][0]
-    img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+        temp = list(temp)
+        temp.clear()
+        temp = get_coordinates(img)
+        coordinates_x["right"] = abs(constants.WIDTH - temp[0][0])
+        coordinates_y["right"] = temp[1][0]
+        img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
 
-    cv2.line(img,(coordinates_x["top"],coordinates_y["top"]),(coordinates_x["right"],coordinates_y["right"]),(100,0,0),thickness=10,lineType=cv2.LINE_8,shift=0)
-    cv2.imwrite("../img/result/line_1.jpg",img)
-    cv2.line(img,(coordinates_x["right"],coordinates_y["right"]),(coordinates_x["left"],coordinates_y["left"]),(100,0,0),thickness=10,lineType=cv2.LINE_8,shift=0)
-    cv2.imwrite("../img/result/line_2.jpg",img)
-    cv2.line(img,(coordinates_x["left"],coordinates_y["left"]),(coordinates_x["top"],coordinates_y["top"]),(100,0,0),thickness=10,lineType=cv2.LINE_8,shift=0)
-
-    for i,j in coordinates_x.items():
-        print(f"{i}_x:{j}")
-    for i,j in coordinates_y.items():
-        print(f"{i}_y:{j}")
-
-    cv2.imwrite(f"../img/result/result.jpg",img)
-
-    if  (abs(coordinates_x["left"] - coordinates_x["right"]))>=constants.WIDTH*0.6:
-        return "goal"
-    return get_center_point(coordinates_x["left"],coordinates_x["right"],coordinates_x["top"])
+        cv2.rectangle(original, (coordinates_x["left"],coordinates_y["top"]),(coordinates_x["right"],coordinates_y["right"]), (1,0,0), 2)
+        cv2.circle(original, (coordinates_x["left"],coordinates_y["left"]), 10, (0,255,255), -1)
+        cv2.circle(original, (coordinates_x["right"],coordinates_y["right"]), 10, (255,255,255), -1)
+        cv2.circle(original, (coordinates_x["top"],coordinates_y["top"]), 10, (255,0,255), -1)
+        return get_center_point(coordinates_x["left"],coordinates_x["right"],coordinates_x["top"]),original
+    except Exception:
+        return "ERROR",original
 
 def get_center_point(right,left,top):
     result = ((right+left)/2 + top)//2
@@ -110,28 +102,46 @@ def merge_chunks(chunks, original_shape, size):
     merged = merged[:h, :w]
     return merged
 
+def imgprocess(img):
+    img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
+    chunk =  (img.shape[0] , img.shape[1] // 4 )
+    afImg = split_by_size(img,chunk)
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        rsImg = list(executor.map(red_mask, afImg))
+    merge = merge_chunks(rsImg,img.shape,chunk)
+    result,rsimg = get_target_points(merge,img)
+    if result == "ERROR":
+        return "right",rsimg
+    else:
+        return result,rsimg
+
 def main():
     path = "../img/original/"
     files = os.listdir(path)
     for fname in files:
-        img = cv2.imread(path+fname)
-        chunk =  (img.shape[0] , img.shape[1] // 4 )
-        afImg = split_by_size(img,chunk)
+        try:
+            img = cv2.imread(path+fname)
+            chunk =  (img.shape[0] , img.shape[1] // 4 )
+            afImg = split_by_size(img,chunk)
 
-        st = time.time()
-        with ThreadPoolExecutor(max_workers=8) as executor:
-            rsImg = list(executor.map(red_mask, afImg))
-        print(f"終了: {time.time() - st:.3f}秒")
+            st = time.time()
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                rsImg = list(executor.map(red_mask, afImg))
+            print(f"終了: {time.time() - st:.3f}秒")
 
-        os.makedirs("img", exist_ok=True)
-        for i, im in enumerate(rsImg):
-            cv2.imwrite(f"../img/chatgpt{i}.png", im)
+            os.makedirs("img", exist_ok=True)
+            for i, im in enumerate(rsImg):
+                cv2.imwrite(f"../img/result{i}.png", im)
 
-        merge = merge_chunks(rsImg,img.shape,chunk)
+            merge = merge_chunks(rsImg,img.shape,chunk)
 
-        #print(get_target_point(merge))
+            _,img = get_target_points(merge,img)
 
-        cv2.imwrite(f"../img/result/result-{fname}.png",merge)
+            cv2.imwrite(f"../img/result/result-{fname}",img)
+            if fname == "15m_20250917_141523":
+                break
 
+        except Exception as e:
+            print(e)
 if __name__ == "__main__":
     main()
