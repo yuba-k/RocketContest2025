@@ -7,7 +7,7 @@ import constants
 
 
 def opening(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
     kernel = np.array([[0,1,0],[1,1,1],[0,1,0]], np.uint8)
     img = cv2.erode(img, kernel, iterations=3)
@@ -21,7 +21,7 @@ def opening(img):
     return out
 
 def red_mask(img):
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     mask1 = cv2.inRange(hsv, (0, 100, 100), (10, 255, 255))
     mask2 = cv2.inRange(hsv, (170, 100, 100), (180, 255, 255))
     mask = cv2.bitwise_or(mask1, mask2)
