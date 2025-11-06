@@ -13,10 +13,12 @@ def start_motor():
 
 def approach():
     cmd = ""
+    i = 0
     while cmd != "goal":
-        img = picam.cap()
+        img = picam.cap(cnt=i)
         cmd, _ = imgProcess.imgprocess(img)
         mv.direction = cmd
+        i += 1
     mv.direction = "stop"
     print("ゴールしました")
 
@@ -29,3 +31,6 @@ def main():
     finally:
         picam.disconnect()
         mv.cleanup()
+
+if __name__ == "__main__":
+    main()
