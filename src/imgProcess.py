@@ -111,7 +111,7 @@ def imgprocess(img):
     merge = merge_chunks(rsImg,img.shape,chunk)
     result,rsimg = get_target_points(merge,img)
     if result == "ERROR":
-        return "right",rsimg
+        return "search",rsimg
     else:
         return result,rsimg
 

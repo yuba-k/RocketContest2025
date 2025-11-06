@@ -34,14 +34,13 @@ class Motor():
         self.left.start(0)
 
     def move(self,duty = None):
+        if duty == None:
+            duty = self.duty
         while True:
-            if duty == None:
-                duty = self.duty
-            print(f"モータcmd{self.direction}")
+            print(f"モータコマンド->{self.direction}")
             self.adjust_duty_cycle(self.direction,duty)
             self.right.ChangeDutyCycle(self.right_duty)
             self.left.ChangeDutyCycle(self.left_duty)
-            time.sleep(0.5)
 
     def adjust_duty_cycle(self,direction,duty):
         GPIO.output(self.right_phase,GPIO.LOW)
