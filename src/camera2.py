@@ -3,13 +3,11 @@ from libcamera import controls
 import cv2
 import numpy as np
 
-import logwrite
 import constants
 
 class Camera():
     def __init__(self):
         try:
-            self.log = logwrite.MyLogging()
             self.picam = Picamera2()
             self.picam.configure(self.picam.create_still_configuration(main={"format":"RGB888","size":(constants.WIDTH,constants.HEIGHT)}))
             self.picam.set_controls(
@@ -21,7 +19,6 @@ class Camera():
             )
 
         except Exception as e:
-            self.log.write("An error occurred during camera initialization","ERROR")
             raise
     def cap(self,cnt):
         try:
@@ -32,7 +29,6 @@ class Camera():
             self.save(im,cnt)
             return im
         except Exception as e:
-            self.log.write("An error occurs when shooting","ERROR")
             return None
     def save(self,im,cnt):
         cv2.imwrite(f"../img/default/{cnt}test_cv2.jpg",im)
