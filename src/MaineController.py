@@ -16,17 +16,17 @@ def start_motor():
 
 def start_camera():
     global img
+    i = 0
     while running_flag:
-        img = picam.cap()
+        img = picam.cap(cnt=i)
+        i += 1
 
 def approach():
     cmd = ""
-    i = 0
     while cmd != "goal":
         mv.direction = "stop"
         cmd, _ = imgProcess.imgprocess(img)
         mv.direction = cmd
-        i += 1
     mv.direction = "stop"
     print("ゴールしました")
 
