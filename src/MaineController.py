@@ -25,16 +25,17 @@ def approach():
     cmd = ""
     while cmd != "goal":
         mv.direction = "stop"
-        cmd, _ = imgProcess.imgprocess(img)
-        mv.direction = cmd
+        if img is not None:
+            cmd, _ = imgProcess.imgprocess(img)
+            mv.direction = cmd
     mv.direction = "stop"
     print("ゴールしました")
 
 def main():
     try:
         threading.Thread(target=start_motor,daemon=True).start()
-        threading.Thread(target=approach,daemon=True).start()
         threading.Thread(target=start_camera,daemon=True).start()
+        threading.Thread(target=approach,daemon=True).start()
         while True:
             time.sleep(1)
     finally:
