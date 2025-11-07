@@ -8,18 +8,23 @@ import camera2
 picam = camera2.Camera()
 mv = motor.Motor()
 
+running_flag = True
+img = None
+
 def start_motor():
     mv.move()
+
+def start_camera():
+    global img
+    while running_flag:
+        img = picam.cap()
 
 def approach():
     cmd = ""
     i = 0
     while cmd != "goal":
-        time.sleep(0.3)
         mv.direction = "stop"
-        img = picam.cap(cnt=i)
-        cmd, img = imgProcess.imgprocess(img)
-        picam.save(img,i)
+        cmd, _ = imgProcess.imgprocess(img)
         mv.direction = cmd
         i += 1
     mv.direction = "stop"
@@ -29,6 +34,7 @@ def main():
     try:
         threading.Thread(target=start_motor,daemon=True).start()
         threading.Thread(target=approach,daemon=True).start()
+        threading.Thread(target=start_camera,daemon=True).start()
         while True:
             time.sleep(1)
     finally:
