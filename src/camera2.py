@@ -17,12 +17,11 @@ class Camera():
                     "AeMeteringMode": controls.AeMeteringModeEnum.Matrix        # 全体を考慮した測光
                 }
             )
-
+            self.picam.start()
         except Exception as e:
             raise
     def cap(self,cnt):
         try:
-            self.picam.start()
             im = self.picam.capture_array()
             im = np.flipud(im)
             im = np.fliplr(im)
@@ -34,6 +33,7 @@ class Camera():
 #        im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
         cv2.imwrite(f"../img/default/{cnt}test_cv2.jpg",im)
     def disconnect(self):
+        self.picam.stop()
         self.picam.close()
 
 def main():
