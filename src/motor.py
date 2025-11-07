@@ -37,7 +37,6 @@ class Motor():
         if duty == None:
             duty = self.duty
         while True:
-            print(f"モータコマンド->{self.direction}")
             self.adjust_duty_cycle(self.direction,duty)
             self.right.ChangeDutyCycle(self.right_duty)
             self.left.ChangeDutyCycle(self.left_duty)

@@ -69,7 +69,9 @@ def get_target_points(img,original):
 
 def get_center_point(right,left,top):
     result = ((right+left)/2 + top)//2
-    if result < constants.WIDTH//3:
+    if right - left >= constants.WIDTH * 0.8:
+        return "goal"
+    elif result < constants.WIDTH//3:
         return "left"
     elif result < constants.WIDTH//3*2:
         return "forward"

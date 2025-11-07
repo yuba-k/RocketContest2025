@@ -15,7 +15,7 @@ def approach():
     cmd = ""
     i = 0
     while cmd != "goal":
-        time.sleep(0.5)
+        time.sleep(0.3)
         mv.direction = "stop"
         img = picam.cap(cnt=i)
         cmd, img = imgProcess.imgprocess(img)
