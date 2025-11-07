@@ -31,7 +31,7 @@ class Camera():
         except Exception as e:
             return None
     def save(self,im,cnt):
-        im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
+#        im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
         cv2.imwrite(f"../img/default/{cnt}test_cv2.jpg",im)
     def disconnect(self):
         self.picam.close()

@@ -27,8 +27,9 @@ def approach():
         mv.direction = "stop"
         if img is not None:
             cmd, _ = imgProcess.imgprocess(img)
-            mv.direction = cmd
+            mv.adjust_duty_cycle(cmd)
     mv.direction = "stop"
+    mv.running = False
     print("ゴールしました")
 
 def main():
