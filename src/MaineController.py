@@ -30,9 +30,11 @@ def approach():
             mv.adjust_duty_cycle(cmd)
     mv.direction = "stop"
     mv.running = False
+    running_flag = False
     print("ゴールしました")
 
 def main():
+    mv.adjust_duty_cycle("stop")
     try:
         threading.Thread(target=start_motor,daemon=True).start()
         threading.Thread(target=start_camera,daemon=True).start()
