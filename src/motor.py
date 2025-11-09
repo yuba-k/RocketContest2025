@@ -18,7 +18,7 @@ class Motor():
         self.direction = "stop"
 
         self.running = True
-
+        self.changeFlag = False
         self.setup_gpio()
 
         self.initialize_motors()
@@ -39,9 +39,12 @@ class Motor():
         GPIO.output(self.right_phase,GPIO.LOW)
         GPIO.output(self.left_phase,GPIO.LOW)
         while self.running:
-            self.right.ChangeDutyCycle(self.right_duty)
-            self.left.ChangeDutyCycle(self.left_duty)
-            time.sleep(0.05)
+            if self.changeFlag:
+                self.changeFlag = False
+                self.right.ChangeDutyCycle(self.right_duty)
+                self.left.ChangeDutyCycle(self.left_duty)
+            else:
+                time.sleep(0.1)
 
     def adjust_duty_cycle(self,direction):
         if direction == "forward":
@@ -55,8 +58,7 @@ class Motor():
             self.left_duty = self.duty * 0.6
         else:
             self.right_duty = self.left_duty = 0
-            self.right.ChangeDutyCycle(0)
-            self.left.ChangeDutyCycle(0)
+        self.changeFlag = True
         
     def cleanup(self):
         GPIO.cleanup()

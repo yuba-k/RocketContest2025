@@ -5,6 +5,7 @@ import time
 import os
 import constants
 
+_executor = ThreadPoolExecutor(max_workers=8)
 
 def opening(img):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -108,8 +109,7 @@ def imgprocess(img):
     img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
     chunk =  (img.shape[0] , img.shape[1] // 4 )
     afImg = split_by_size(img,chunk)
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        rsImg = list(executor.map(red_mask, afImg))
+    rsImg = list(_executor.map(red_mask, afImg))
     merge = merge_chunks(rsImg,img.shape,chunk)
     result,rsimg = get_target_points(merge,img)
     if result == "ERROR":
