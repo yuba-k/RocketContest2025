@@ -7,7 +7,12 @@ import constants
 
 _executor = ThreadPoolExecutor(max_workers=8)
 
-def filter_small_regions(img):
+def opening(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+    kernel = np.array([[0,1,0],[1,1,1],[0,1,0]], np.uint8)
+    img = cv2.erode(img, kernel, iterations=3)
+    img = cv2.dilate(img, kernel, iterations=3)
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
@@ -16,14 +21,7 @@ def filter_small_regions(img):
         return img
     out = np.zeros_like(img)
     cv2.drawContours(out, [max(contours, key=cv2.contourArea)], -1, 255, -1)
-
-def opening(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
-    kernel = np.array([[0,1,0],[1,1,1],[0,1,0]], np.uint8)
-    img = cv2.erode(img, kernel, iterations=3)
-    img = cv2.dilate(img, kernel, iterations=3)
-    return filter_small_regions(img)
+    return out
 
 def red_mask(img):
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
@@ -115,7 +113,7 @@ def imgprocess(img):
     afImg = split_by_size(img,chunk)
     rsImg = list(_executor.map(red_mask, afImg))
     merge = merge_chunks(rsImg,img.shape,chunk)
-    merge = filter_small_regions(merge)
+    merge = opening(merge)
     result,rsimg = get_target_points(merge,img)
     if result == "ERROR":
         return "search",rsimg
