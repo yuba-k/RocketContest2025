@@ -111,7 +111,6 @@ def imgprocess(img):
     afImg = split_by_size(img,chunk)
     rsImg = list(_executor.map(red_mask, afImg))
     merge = merge_chunks(rsImg,img.shape,chunk)
-    merge = opening(merge)
     result,rsimg = get_target_points(merge,img)
     if result == "ERROR":
         return "search",rsimg
