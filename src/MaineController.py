@@ -16,7 +16,7 @@ def start_camera(picam):
         i += 1
         try:
             if frame_q.full():
-                frame_q.get_nowait(timeout = 0.1)
+                frame_q.get_nowait()
             frame_q.put_nowait(frame)
         except queue.Full:
             pass
