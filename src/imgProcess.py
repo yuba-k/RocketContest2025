@@ -13,8 +13,6 @@ def opening(img):
     kernel = np.array([[0,1,0],[1,1,1],[0,1,0]], np.uint8)
     img = cv2.erode(img, kernel, iterations=3)
     img = cv2.dilate(img, kernel, iterations=3)
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
     contours = [c for c in contours if cv2.contourArea(c) > 1000]
     if not contours:
