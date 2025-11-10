@@ -7,6 +7,15 @@ import constants
 
 _executor = ThreadPoolExecutor(max_workers=8)
 
+def binaryNoiseCutter(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+    contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
+    contours = [c for c in contours if cv2.contourArea(c) > 1000]
+    out = np.zeros_like(img)
+    cv2.drawContours(out, [max(contours, key=cv2.contourArea)], -1, 255, -1)
+    return out
+
 def opening(img):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
@@ -111,6 +120,7 @@ def imgprocess(img):
     afImg = split_by_size(img,chunk)
     rsImg = list(_executor.map(red_mask, afImg))
     merge = merge_chunks(rsImg,img.shape,chunk)
+    merge = binaryNoiseCutter(merge)
     result,rsimg = get_target_points(merge,img)
     if result == "ERROR":
         return "search",rsimg
