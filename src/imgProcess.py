@@ -13,6 +13,8 @@ def binaryNoiseCutter(img):
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
     contours = [c for c in contours]
     out = np.zeros_like(img)
+    if not contours:
+        return out
     cv2.drawContours(out, [max(contours, key=cv2.contourArea)], -1, 255, -1)
     return out
 
@@ -79,7 +81,7 @@ def get_target_points(img,original):
 
 def get_center_point(right,left,top):
     result = ((right+left)/2 + top)//2
-    if right - left >= constants.WIDTH * 0.8:
+    if ((right - left) >= (constants.WIDTH * 0.8)):
         return "goal"
     elif result < constants.WIDTH//3:
         return "left"

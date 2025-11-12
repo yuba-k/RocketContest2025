@@ -25,7 +25,7 @@ class Camera():
         try:
             im = self.picam.capture_array()
             im = cv2.flip(im,-1)
-            self.save(im,cnt)
+#            self.save(im,cnt)
             return im
         except Exception as e:
             return None

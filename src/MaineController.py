@@ -39,19 +39,22 @@ def start_camera(picam):
         except queue.Full:
             pass
         
-def approach(mv):
+def approach(mv, picam):
     cmd = ""
+    cnt = 0
     while not stop_event.is_set():
         try:
             frame = frame_q.get()
         except queue.Empty:
             continue
-        cmd, _ = imgProcess.imgprocess(frame)
+        cmd, rs = imgProcess.imgprocess(frame)
+        picam.save(rs,cnt)
         if cmd == "goal":
             mv.adjust_duty_cycle("stop")
             print("ゴールしました")
             stop_event.set()
         mv.adjust_duty_cycle(cmd)
+        cnt += 1
 
 def main():
     logger.info("CanSat起動")
@@ -63,7 +66,7 @@ def main():
     try:
         threading.Thread(target=mv.move, daemon=True).start()
         threading.Thread(target=start_camera, args=(picam,) ,daemon=True).start()
-        threading.Thread(target=approach,args=(mv,), daemon=True).start()
+        threading.Thread(target=approach,args=(mv,picam), daemon=True).start()
         logger.info("全スレッド起動")
         while not stop_event.is_set():
             time.sleep(1)
