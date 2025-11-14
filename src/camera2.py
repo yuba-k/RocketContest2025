@@ -6,6 +6,9 @@ import threading
 
 import constants
 
+RGB = 1
+BGR = 2
+
 class Camera():
     def __init__(self):
         try:
@@ -25,13 +28,16 @@ class Camera():
         try:
             im = self.picam.capture_array()
             im = cv2.flip(im,-1)
-#            self.save(im,cnt)
+            self.save(im,"../img/default/{cnt}test_cv2.jpg",RGB)
             return im
         except Exception as e:
             return None
-    def save(self,im,cnt):
-#        im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
-        threading.Thread(target = cv2.imwrite, args = (f"../img/default/{cnt}test_cv2.jpg",im), daemon = True).start()
+    def save(self,im,fullpath,mode):
+        if mode == 1:
+            threading.Thread(target = cv2.imwrite, args = (fullpath,im), daemon = True).start()
+        elif mode == 2:
+            im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+            threading.Thread(target = cv2.imwrite, args = (fullpath,im), daemon = True).start()
     def disconnect(self):
         self.picam.stop()
         self.picam.close()

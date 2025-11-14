@@ -48,10 +48,10 @@ def approach(mv, picam):
         except queue.Empty:
             continue
         cmd, rs = imgProcess.imgprocess(frame)
-        picam.save(rs,cnt)
+        picam.save(rs,"../img/result/{cnt}test_cv2.jpg",camera2.RGB)
         if cmd == "goal":
             mv.adjust_duty_cycle("stop")
-            print("ゴールしました")
+            logger.info("ゴールしました")
             stop_event.set()
         mv.adjust_duty_cycle(cmd)
         cnt += 1
