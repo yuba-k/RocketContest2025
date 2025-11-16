@@ -10,6 +10,8 @@ class PID():
         self.sample_time = sample_time
 
         self._last_time = None
+        self._last_error = 0
+        self._last_time = 0
 
     def calc(self,mesurment):
         if self._last_time is None:
