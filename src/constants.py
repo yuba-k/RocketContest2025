@@ -12,6 +12,7 @@ HEIGHT: Final = confload.reader("camera","height","intenger")
 WIDTH: Final = confload.reader("camera","weight","intenger")
 
 DUTY:Final = confload.reader("motor","duty","intenger")
+BASE_DUTY:Final = confload.reader("motor","base_duty","intenger")
 RIGHT_PWM: Final = confload.reader("motor","right_pwm","intenger")
 RIGHT_PHASE: Final = confload.reader("motor","right_phase","intenger")
 LEFT_PWM: Final = confload.reader("motor","left_pwm","intenger")

@@ -1,8 +1,15 @@
 import RPi.GPIO as GPIO
 import time
+from enum import Enum
 
 import configloading
 import constants
+import gyro_angle
+import pid_controller
+
+class ADJUST_DUTY_MODE(Enum):
+    DIRECTION = 1
+    ANGLE = 2
 
 class Motor():
     def __init__(self):
@@ -12,6 +19,9 @@ class Motor():
         self.left_pwm = constants.LEFT_PWM
         self.right_phase = constants.RIGHT_PHASE
         self.left_phase = constants.LEFT_PHASE
+
+        self.gyroangle = gyro_angle.GYRO()
+        self.pid = pid_controller()
 
         GPIO.setmode(GPIO.BCM)#setmodeでBCMを用いて指定することを宣言　#GPIOピン番号のこと！
 
@@ -46,19 +56,29 @@ class Motor():
             else:
                 time.sleep(0.1)
 
-    def adjust_duty_cycle(self,direction):
-        if direction == "forward":
-            self.right_duty = self.duty
-            self.left_duty = self.duty
-        elif direction == "right" or direction == "search":
-            self.right_duty = self.duty * 0.6
-            self.left_duty = self.duty
-        elif direction == "left":
-            self.right_duty = self.duty * 1.0
-            self.left_duty = self.duty * 0.6
-        else:
-            self.right_duty = self.left_duty = 0
-        self.changeFlag = True
+    def adjust_duty_cycle(self,mode,direction=None,angle=None,sec=None):
+        if mode == ADJUST_DUTY_MODE.DIRECTION:
+            if direction == "forward":
+                self.right_duty = self.duty
+                self.left_duty = self.duty
+            elif direction == "right" or direction == "search":
+                self.right_duty = self.duty * 0.6
+                self.left_duty = self.duty
+            elif direction == "left":
+                self.right_duty = self.duty * 1.0
+                self.left_duty = self.duty * 0.6
+            else:
+                self.right_duty = self.left_duty = 0
+            self.changeFlag = True
+        elif mode == ADJUST_DUTY_MODE.ANGLE:
+            current = time.time()
+            while time.time() - current > sec:
+                gyrodata = self.gyroangle.get_data()
+                pidout = self.pid.calc(gyrodata)
+                self.right_duty = self.duty - pidout
+                self.left_duty = self.duty + pidout
+                self.changeFlag = True
+                time.sleep(1)
         
     def cleanup(self):
         GPIO.cleanup()

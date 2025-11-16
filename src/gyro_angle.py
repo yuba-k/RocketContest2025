@@ -12,6 +12,10 @@ class GYRO():
         self._lasttime = None
 
     def get_data(self):
+        """
+        Returns:
+            float: 弧度法で累積移動角を返値
+        """
         if self._lasttime is None:
             self._lasttime = time.perf_counter()
             return 0.0
@@ -20,3 +24,7 @@ class GYRO():
         row_z = sensor.gyro[2]
         self.gyro_z += row_z * dt
         return self.gyro_z
+    
+    def reset(self):
+        self.gyro_z = 0.0
+        self._lasttime = 0.0

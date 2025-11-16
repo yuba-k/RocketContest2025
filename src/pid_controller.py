@@ -39,3 +39,10 @@ class PID():
         self._last_error = error
         self._last_output = output
         return output
+
+    def reset(self,setpoint):
+        self._last_time = None
+        self._last_error = 0
+        self._integral = 0
+        self._last_output = 0
+        self.setpoint = setpoint
