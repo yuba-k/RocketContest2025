@@ -59,7 +59,7 @@ class Motor():
             else:
                 time.sleep(0.1)
 
-    def adjust_duty_cycle(self,mode,direction=None,angle=None,sec=None):
+    def adjust_duty_cycle(self,mode,direction=None,target_angle=None,sec=None):
         if mode == ADJUST_DUTY_MODE.DIRECTION:
             if direction == "forward":
                 self.right_duty = self.duty
@@ -75,6 +75,7 @@ class Motor():
             self.changeFlag = True
         elif mode == ADJUST_DUTY_MODE.ANGLE:
             current = time.time()
+            self.pid.reset(setpoint=target_angle)
             while time.time() - current < sec:
                 gyrodata = self.gyroangle.get_data()
                 pidout = self.pid.calc(gyrodata)
@@ -96,7 +97,7 @@ def main():
         while True:
             deg = int(input("DEGREE="))
             deg = math.radians(deg)
-            motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE,angle=deg,sec=10)
+            motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE,target_angle=deg,sec=10)
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
     finally:
