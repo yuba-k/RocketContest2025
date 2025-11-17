@@ -84,8 +84,8 @@ class Motor():
                 self.changeFlag = True
                 time.sleep(1)
             self.right_duty = self.left_duty = 0
+            self.gyroangle.reset()
             self.changeFlag = True
-            self.pid.reset()
         
     def cleanup(self):
         GPIO.cleanup()
