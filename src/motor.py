@@ -24,7 +24,7 @@ class Motor():
         self.left_phase = constants.LEFT_PHASE
 
         self.gyroangle = gyro_angle.GYRO()
-        self.pid = pid_controller()
+        self.pid = pid_controller.PID(kp=1.2,ki=0.2,kd=0.2,setpoint=0)
 
         GPIO.setmode(GPIO.BCM)#setmodeでBCMを用いて指定することを宣言　#GPIOピン番号のこと！
 
@@ -75,7 +75,7 @@ class Motor():
             self.changeFlag = True
         elif mode == ADJUST_DUTY_MODE.ANGLE:
             current = time.time()
-            while time.time() - current > sec:
+            while time.time() - current < sec:
                 gyrodata = self.gyroangle.get_data()
                 pidout = self.pid.calc(gyrodata)
                 self.right_duty = self.baseduty - pidout
@@ -84,17 +84,23 @@ class Motor():
                 time.sleep(1)
             self.right_duty = self.left_duty = 0
             self.changeFlag = True
+            self.pid.reset()
         
     def cleanup(self):
         GPIO.cleanup()
 
 def main():
-    motor = Motor()
-    threading.Thread(target=motor.move,daemon=True).start()
-    while True:
-        deg = int(input("DEGREE="))
-        deg = math.radians(deg)
-        motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE,angle=deg,sec=10)
+    try:
+        motor = Motor()
+        threading.Thread(target=motor.move,daemon=True).start()
+        while True:
+            deg = int(input("DEGREE="))
+            deg = math.radians(deg)
+            motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE,angle=deg,sec=10)
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt")
+    finally:
+        motor.cleanup()          
 
 if __name__ == "__main__":
     main()
