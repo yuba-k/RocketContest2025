@@ -1,7 +1,7 @@
 import time
 
 class PID():
-    def __init__(self,kp,ki,kd,setpoint,limits=(-45,45),sample_time=0.05):
+    def __init__(self,kp,ki,kd,setpoint,limits=(-15,15),sample_time=0.05):
         self.kp = kp
         self.ki = ki
         self.kd = kd
