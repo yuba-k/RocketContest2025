@@ -1,6 +1,8 @@
 import RPi.GPIO as GPIO
 import time
 from enum import Enum
+import threading
+import math
 
 import configloading
 import constants
@@ -85,13 +87,11 @@ class Motor():
 
 def main():
     motor = Motor()
-    print("forward,right,left")
-    try:
-        while True:
-            direction =input("direction:")
-            motor.move(direction,3,100)
-    except KeyboardInterrupt:
-        motor.cleanup()
+    threading.Thread(target=motor.move,daemon=True).start()
+    while True:
+        deg = int(input("DEGREE="))
+        deg = math.radians(deg)
+        motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE,angle=deg,sec=10)
 
 if __name__ == "__main__":
     main()
