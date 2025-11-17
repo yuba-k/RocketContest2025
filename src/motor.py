@@ -17,6 +17,7 @@ class Motor():
     def __init__(self):
         config = configloading.Config_reader()
         self.duty = constants.DUTY
+        self.baseduty = constants.BASE_DUTY
         self.right_pwm = constants.RIGHT_PWM
         self.left_pwm = constants.LEFT_PWM
         self.right_phase = constants.RIGHT_PHASE
@@ -77,10 +78,12 @@ class Motor():
             while time.time() - current > sec:
                 gyrodata = self.gyroangle.get_data()
                 pidout = self.pid.calc(gyrodata)
-                self.right_duty = self.duty - pidout
-                self.left_duty = self.duty + pidout
+                self.right_duty = self.baseduty - pidout
+                self.left_duty = self.baseduty + pidout
                 self.changeFlag = True
                 time.sleep(1)
+            self.right_duty = self.left_duty = 0
+            self.changeFlag = True
         
     def cleanup(self):
         GPIO.cleanup()
