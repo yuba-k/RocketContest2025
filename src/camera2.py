@@ -3,11 +3,16 @@ from libcamera import controls
 import cv2
 import numpy as np
 import threading
+import logging
+from enum import Enum
 
 import constants
 
-RGB = 1
-BGR = 2
+logger = logging.getLogger(__name__)
+
+class COLOR_MODE(Enum) :
+    RGB = 1
+    BGR = 2
 
 class Camera():
     def __init__(self):
@@ -23,19 +28,21 @@ class Camera():
             )
             self.picam.start()
         except Exception as e:
-            raise
+            threading.Thread(target=logger.error,args=(f"CameraError:{e}",))
+            raise e
     def cap(self,cnt):
         try:
             im = self.picam.capture_array()
             im = cv2.flip(im,-1)
-            self.save(im,"../img/default/{cnt}test_cv2.jpg",RGB)
+            self.save(im,"../img/default/{cnt}test_cv2.jpg",COLOR_MODE.RGB)
             return im
         except Exception as e:
+            threading.Thread(target=logger.error(f"ImgSaveError:{e}",))
             return None
     def save(self,im,fullpath,mode):
-        if mode == 1:
+        if mode == COLOR_MODE.BGR:
             threading.Thread(target = cv2.imwrite, args = (fullpath,im), daemon = True).start()
-        elif mode == 2:
+        elif mode == COLOR_MODE.RGB:
             im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
             threading.Thread(target = cv2.imwrite, args = (fullpath,im), daemon = True).start()
     def disconnect(self):

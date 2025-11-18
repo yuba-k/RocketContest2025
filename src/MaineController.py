@@ -11,21 +11,25 @@ import camera2
 frame_q = queue.Queue(maxsize=1)
 stop_event = threading.Event()
 
+# ログの設定
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
-filehandler = logging.FileHandler("cansat.log")
-filehandler.setLevel(logging.DEBUG)
+with open('../config/logconfig.ini','r',encoding='utf-8') as f:
+    logging.config.fileConfig(f)
 
-consolehandler = logging.StreamHandler()
-consolehandler.setLevel(logging.DEBUG)
+# filehandler = logging.FileHandler("cansat.log")
+# filehandler.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("%(asctime)s-%(filename)s-%(funcName)s-%(levelname)s-%(message)s")
-filehandler.setFormatter(formatter)
-consolehandler.setFormatter(formatter)
+# consolehandler = logging.StreamHandler()
+# consolehandler.setLevel(logging.DEBUG)
 
-logger.addHandler(filehandler)
-logger.addHandler(consolehandler)
+# formatter = logging.Formatter("%(asctime)s-%(filename)s-%(funcName)s-%(levelname)s-%(message)s")
+# filehandler.setFormatter(formatter)
+# consolehandler.setFormatter(formatter)
+
+# logger.addHandler(filehandler)
+# logger.addHandler(consolehandler)
 
 def start_camera(picam):
     i = 0

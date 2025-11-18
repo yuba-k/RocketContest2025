@@ -3,11 +3,14 @@ import time
 from enum import Enum
 import threading
 import math
+import logging
 
 import configloading
 import constants
 import gyro_angle
 import pid_controller
+
+logger = logging.getLogger(__name__)
 
 class ADJUST_DUTY_MODE(Enum):
     DIRECTION = 1
@@ -59,7 +62,7 @@ class Motor():
             else:
                 time.sleep(0.1)
 
-    def adjust_duty_cycle(self,mode,direction=None,target_angle=None,sec=None):
+    def adjust_duty_cycle(self,mode,direction=None,target_angle=0,sec=None):
         if mode == ADJUST_DUTY_MODE.DIRECTION:
             if direction == "forward":
                 self.right_duty = self.duty
@@ -73,6 +76,7 @@ class Motor():
             else:
                 self.right_duty = self.left_duty = 0
             self.changeFlag = True
+            threading.Thread(target=logger.info,args=(f"Direction:{direction},Duty:{self.right_duty,self.left_duty}",)).start()
         elif mode == ADJUST_DUTY_MODE.ANGLE:
             current = time.time()
             self.pid.reset(setpoint=target_angle)
@@ -82,6 +86,7 @@ class Motor():
                 self.right_duty = self.baseduty - pidout
                 self.left_duty = self.baseduty + pidout
                 self.changeFlag = True
+                threading.Thread(target=logging.info,args=(f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty,self.left_duty}",)).start()
                 time.sleep(1)
             self.right_duty = self.left_duty = 0
             self.gyroangle.reset()
