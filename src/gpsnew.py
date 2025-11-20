@@ -1,6 +1,9 @@
 import serial
 from typing import Optional, Tuple
 import math
+import logging
+
+logger = logging.getLogger(__name__)
 
 class GPSModule:
     def __init__(self, port: str = "/dev/serial0", baud_rate: int = 9600):
@@ -155,6 +158,7 @@ if __name__ == "__main__":
                 if lat is not None and lon is not None:
                     print(f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}")
                     # ロギングを追加する場合、以下に記述
+                    logger.info(f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}")
                 # Example: log_to_file(lat, lon, satellites, time_utc, dop)
                 else:
                     print("Waiting")
