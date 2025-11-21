@@ -1,16 +1,16 @@
 import smbus
 import time
 import RPi.GPIO
+import logging
 
-import configloading
-import logwrite
+import constants
+
+logger = logging.getLogger(__name__)
 
 class FMemitter():
     def __init__(self):
-        config = configloading.Config_reader()
         self.i2c = smbus.SMBus(1)
-        self.addr = config.reader("i2c","device_addr","intenger16")
-        self.log = logwrite.MyLogging()
+        self.addr = constants.VOICE_SYNTH_ADDR
 
     def stringToAscii(self,message):
         string = [int(hex(ord(s)),0) for s in message]
@@ -22,7 +22,7 @@ class FMemitter():
             time.sleep(1)
             self.i2c.write_byte_data(self.addr,0,0x0d)#終了コード
         except OSError as e:
-            self.log.write(f"OSerror:{e}","ERROR")
+            logger.error(f"OSerror:{e}")
 
     def transmitFMMessage(self,message):
         string = self.stringToAscii(message)
