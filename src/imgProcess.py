@@ -5,13 +5,17 @@ import time
 import os
 import constants
 
+######################################################
+# 画像の取り扱い：BGR形式                              #
+######################################################
+
 _executor = ThreadPoolExecutor(max_workers=8)
 
 def binaryNoiseCutter(img):
 #    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
-    contours = [c for c in contours]
+    contours = [c for c in contours if cv2.contourArea(c) > 1000]
     out = np.zeros_like(img)
     if not contours:
         return out
@@ -33,7 +37,7 @@ def opening(img):
     return out
 
 def red_mask(img):
-    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask1 = cv2.inRange(hsv, (0, 100, 100), (10, 255, 255))
     mask2 = cv2.inRange(hsv, (170, 100, 100), (180, 255, 255))
     mask = cv2.bitwise_or(mask1, mask2)
@@ -139,8 +143,7 @@ def main():
             afImg = split_by_size(img,chunk)
 
             st = time.time()
-            with ThreadPoolExecutor(max_workers=8) as executor:
-                rsImg = list(executor.map(red_mask, afImg))
+            rsImg = list(_executor.map(red_mask, afImg))
             print(f"終了: {time.time() - st:.3f}秒")
 
             os.makedirs("img", exist_ok=True)
@@ -152,8 +155,6 @@ def main():
             _,img = get_target_points(merge,img)
 
             cv2.imwrite(f"../img/result/result-{fname}",img)
-            if fname == "15m_20250917_141523":
-                break
 
         except Exception as e:
             print(e)
