@@ -82,6 +82,13 @@ def get_target_points(img,original):
         return get_center_point(coordinates_x["left"],coordinates_x["right"],coordinates_x["top"]),original
     except Exception:
         return "ERROR",original
+    
+def get_target_points2(binary,img):
+    countors, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
+    for c in countors:
+        x, y, w, h = cv2.boundingRect(c)
+        cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
+    return "TEST", img
 
 def get_center_point(right,left,top):
     result = ((right+left)/2 + top)//2
@@ -151,12 +158,12 @@ def main():
                 cv2.imwrite(f"../img/result{i}.png", im)
 
             merge = merge_chunks(rsImg,img.shape,chunk)
-
-            _,img = get_target_points(merge,img)
+            merge = binaryNoiseCutter(merge)
+            _,img = get_target_points2(merge,img)
 
             cv2.imwrite(f"../img/result/result-{fname}",img)
 
-        except Exception as e:
-            print(e)
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt")
 if __name__ == "__main__":
     main()
