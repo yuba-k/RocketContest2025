@@ -3,13 +3,16 @@ import cv2
 import numpy as np
 import time
 import os
+from ultralytics import YOLO
 import constants
+
 
 ######################################################
 # 画像の取り扱い：BGR形式                              #
 ######################################################
 
 _executor = ThreadPoolExecutor(max_workers=8)
+model = YOLO("../model/last_ncnn_mdel")
 
 def binaryNoiseCutter(img):
 #    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -88,10 +91,13 @@ def get_target_points2(binary,img):
     for c in countors:
         x, y, w, h = cv2.boundingRect(c)
         cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
-    return "TEST", img
+    return get_center_point(x,y), img
 
-def get_center_point(right,left,top):
-    result = ((right+left)/2 + top)//2
+def get_center_point(right,left,top = None):
+    if top is None:
+        result = (right+left)//2
+    else:
+        result = ((right+left)/2 + top)//2
     if ((right - left) >= (constants.WIDTH * 0.8)):
         return "goal"
     elif result < constants.WIDTH//3:
@@ -139,6 +145,11 @@ def imgprocess(img):
         return "search",rsimg
     else:
         return result,rsimg
+
+def detect_objects_long_range(img):
+    ret = model(img)
+    x1, x2, y1, y2 = [int(i) for i in ret[0].boxes.xyxy[0]]
+    return get_center_point(x1,x2)
 
 def main():
     path = "../img/original/"

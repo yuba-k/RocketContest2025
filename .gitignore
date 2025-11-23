@@ -6,3 +6,4 @@ img/
 manual/*.docx
 *.jpg
 memo.txt
+model/__pycache__
