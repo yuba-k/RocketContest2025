@@ -98,7 +98,7 @@ def get_center_point(right,left,top = None):
         result = (right+left)//2
     else:
         result = ((right+left)/2 + top)//2
-    if ((right - left) >= (constants.WIDTH * 0.8)):
+    if ((right - left) >= (constants.WIDTH * 0.6)):
         return "goal"
     elif result < constants.WIDTH//3:
         return "left"
