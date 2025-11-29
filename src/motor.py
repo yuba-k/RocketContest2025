@@ -60,7 +60,7 @@ class Motor():
                 self.right.ChangeDutyCycle(self.right_duty)
                 self.left.ChangeDutyCycle(self.left_duty)
             else:
-                time.sleep(0.1)
+                time.sleep(0.05)
 
     def adjust_duty_cycle(self,mode,direction=None,target_angle=0,sec=None):
         if mode == ADJUST_DUTY_MODE.DIRECTION:
@@ -76,7 +76,7 @@ class Motor():
             else:
                 self.right_duty = self.left_duty = 0
             self.changeFlag = True
-            threading.Thread(target=logger.info,args=(f"Direction:{direction},Duty:{self.right_duty,self.left_duty}",)).start()
+            logger.info(f"Direction:{direction},Duty:{self.right_duty,self.left_duty}")
         elif mode == ADJUST_DUTY_MODE.ANGLE:
             current = time.time()
             self.pid.reset(setpoint=target_angle)
@@ -86,8 +86,8 @@ class Motor():
                 self.right_duty = self.baseduty - pidout
                 self.left_duty = self.baseduty + pidout
                 self.changeFlag = True
-                threading.Thread(target=logging.info,args=(f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty,self.left_duty}",)).start()
-                time.sleep(1)
+                logger.info(f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty,self.left_duty}")
+                time.sleep(0.05)
             self.right_duty = self.left_duty = 0
             self.gyroangle.reset()
             self.changeFlag = True

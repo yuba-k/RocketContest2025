@@ -27,4 +27,4 @@ class GYRO():
     
     def reset(self):
         self.gyro_z = 0.0
-        self._lasttime = 0.0
+        self._lasttime = None

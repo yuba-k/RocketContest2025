@@ -11,7 +11,7 @@ import constants
 gps = None
 mv = None
 
-def __init__():
+def init():
     global gps, mv
     gps = gpsnew.GPSModule()
     mv = motor.Motor()
@@ -25,7 +25,7 @@ def gps_movement(target,current_coordinate,target_distance):
             if gpsnew.cheak_data(lat,lon,previous_coordinate):
                 break
             else:
-                time.sleep()
+                time.sleep(1)
         current_coordinate = {"lat":lat,"lon":lon}
         result = gpsnew.calculate_target_distance_angle(current_coordinate,previous_coordinate,target,target_distance)
         match result["dir"]:
@@ -37,9 +37,10 @@ def gps_movement(target,current_coordinate,target_distance):
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.ANGLE,target_angle=result["degree"],sec=4)
             case "right":
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.ANGLE,target_angle=result["degree"],sec=4)
-        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE,target_angle=0,sec = 15)
+        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.ANGLE,target_angle=0,sec = 15)
 
 def main():
+    init()
     goal_coordinate = {"lat":constants.GOAL_LAT,"lon":constants.GOAL_LON}
     current_coordinate = {"lat":None,"lon":None}
     try:
@@ -58,4 +59,8 @@ def main():
         print("KeyboardInterrupt")
     finally:
         gps.disconnect()
+        mv.running = False
         mv.cleanup()
+
+if __name__ == "__main__":
+    main()
