@@ -40,10 +40,10 @@ def approach(mv, picam):
         cmd, rs = imgProcess.imgprocess(frame)
         picam.save(rs,"../img/result/{cnt}test_cv2.jpg",camera2.RGB)
         if cmd == "goal":
-            mv.adjust_duty_cycle("stop")
+            mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION,"stop")
             logger.info("ゴールしました")
             stop_event.set()
-        mv.adjust_duty_cycle(cmd)
+        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION,cmd)
         cnt += 1
 
 def main():
