@@ -15,7 +15,6 @@ def init():
 def awaiting():
     while(True):
         value = GPIO.input(st_pin)
-        print(value)
         if(value == 0):
             logger.info("Start Program")
             break
