@@ -12,7 +12,7 @@ import constants
 ######################################################
 
 _executor = ThreadPoolExecutor(max_workers=8)
-model = YOLO("../model/last_ncnn_mdel")
+model = YOLO("../model/last_ncnn_model")
 
 def binaryNoiseCutter(img):
 #    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
