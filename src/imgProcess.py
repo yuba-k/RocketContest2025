@@ -5,6 +5,7 @@ import time
 import os
 from ultralytics import YOLO
 import constants
+import logging
 
 
 ######################################################
@@ -13,6 +14,8 @@ import constants
 
 _executor = ThreadPoolExecutor(max_workers=8)
 model = YOLO("../model/last_ncnn_model")
+
+logger = logging.getLogger(__name__)
 
 def binaryNoiseCutter(img):
 #    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
