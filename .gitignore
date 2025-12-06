@@ -1,9 +1,10 @@
-画像サンプル
 src/test
 src/__pycache__
+src/img
 img/
 .vscode/
 manual/*.docx
 *.jpg
 memo.txt
 model/__pycache__
+imgsets/
