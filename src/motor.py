@@ -79,6 +79,7 @@ class Motor():
             logger.info(f"Direction:{direction},Duty:{self.right_duty,self.left_duty}")
         elif mode == ADJUST_DUTY_MODE.ANGLE:
             current = time.time()
+            self.gyroangle.reset()
             self.pid.reset(setpoint=target_angle)
             while time.time() - current < sec:
                 gyrodata = self.gyroangle.get_data()
@@ -89,7 +90,6 @@ class Motor():
                 logger.info(f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty,self.left_duty}")
                 time.sleep(0.05)
             self.right_duty = self.left_duty = 0
-            self.gyroangle.reset()
             self.changeFlag = True
         
     def cleanup(self):
