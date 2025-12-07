@@ -64,7 +64,7 @@ def main():
     mv = motor.Motor()
     logger.info("初期化完了")
 
-    mv.adjust_duty_cycle("stop")
+    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE,"stop")
     logger.info("遠距離認識システム")
     #カメラの起動
     threading.Thread(target=start_camera, args=(picam,) ,daemon=True).start()
