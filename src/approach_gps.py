@@ -11,6 +11,9 @@ import constants
 gps = None
 mv = None
 
+logger = logging.getLogger(__name__)
+logging.config.fileConfig('../config/logconfig.ini')
+
 def init():
     global gps, mv
     gps = gpsnew.GPSModule()

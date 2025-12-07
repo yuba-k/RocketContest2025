@@ -13,9 +13,7 @@ stop_event = threading.Event()
 
 # ログの設定
 logger = logging.getLogger(__name__)
-
-with open('../config/logconfig.ini','r',encoding='utf-8') as f:
-    logging.config.fileConfig(f)
+logging.config.fileConfig('../config/logconfig.ini')
 
 def start_camera(picam):
     i = 0
