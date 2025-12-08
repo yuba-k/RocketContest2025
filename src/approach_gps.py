@@ -3,6 +3,7 @@ import queue
 import time
 
 import logging
+import logging.config
 
 import motor
 import gpsnew
