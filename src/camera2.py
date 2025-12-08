@@ -28,7 +28,7 @@ class Camera():
             )
             self.picam.start()
         except Exception as e:
-            threading.Thread(target=logger.error,args=(f"CameraError:{e}",))
+            logger.error(f"CameraError:{e}")
             raise e
     def cap(self,cnt):
         try:
@@ -37,7 +37,7 @@ class Camera():
             self.save(im,"../img/default/{cnt}test_cv2.jpg",COLOR_MODE.RGB)
             return im
         except Exception as e:
-            threading.Thread(target=logger.error(f"ImgSaveError:{e}",))
+            logger.error(f"ImgSaveError:{e}")
             return None
     def save(self,im,fullpath,mode):
         if mode == COLOR_MODE.BGR:
