@@ -1,9 +1,11 @@
-import serial
-from typing import Optional, Tuple
-import math
 import logging
+import math
+from typing import Optional, Tuple
+
+import serial
 
 logger = logging.getLogger(__name__)
+
 
 class GPSModule:
     def __init__(self, port: str = "/dev/serial0", baud_rate: int = 9600):
@@ -31,14 +33,18 @@ class GPSModule:
             self.serial_connection.close()
             print("GPS module disconnected.")
 
-    def parse_nmea_sentence(self, sentence: str) -> Tuple[Optional[float], Optional[float], Optional[int], Optional[str], Optional[float]]:
+    def parse_nmea_sentence(
+        self, sentence: str
+    ) -> Tuple[
+        Optional[float], Optional[float], Optional[int], Optional[str], Optional[float]
+    ]:
         """
         NMEA文を解析し、座標、衛星数、時刻を取得
         :param sentence: NMEA文
         :return: (緯度, 経度, 衛星数, 時刻)
         """
         try:
-            parts = sentence.split(',')
+            parts = sentence.split(",")
             if parts[0] == "$GPGGA":
                 # 時刻
                 utc_time = parts[1][:6]
@@ -52,15 +58,19 @@ class GPSModule:
                 # 衛星数
                 satellite_count = int(parts[7]) if parts[7].isdigit() else None
 
-                #DOP値（座標の精度）
+                # DOP値（座標の精度）
                 dop = parts[8]
 
                 # 座標変換
-                lat = float(raw_lat[:2]) + float(raw_lat[2:]) / 60.0 if raw_lat else None
+                lat = (
+                    float(raw_lat[:2]) + float(raw_lat[2:]) / 60.0 if raw_lat else None
+                )
                 if lat_dir == "S":
                     lat = -lat
 
-                lon = float(raw_lon[:3]) + float(raw_lon[3:]) / 60.0 if raw_lon else None
+                lon = (
+                    float(raw_lon[:3]) + float(raw_lon[3:]) / 60.0 if raw_lon else None
+                )
                 if lon_dir == "W":
                     lon = -lon
 
@@ -70,7 +80,11 @@ class GPSModule:
             pass  # 無効なデータはスキップ
         return None, None, None, None, None
 
-    def get_gps_data(self) -> Tuple[Optional[float], Optional[float], Optional[int], Optional[str], Optional[float]]:
+    def get_gps_data(
+        self,
+    ) -> Tuple[
+        Optional[float], Optional[float], Optional[int], Optional[str], Optional[float]
+    ]:
         """
         GPSデータをリアルタイムで取得
         :return: (緯度, 経度, 衛星数, 時刻)
@@ -78,10 +92,14 @@ class GPSModule:
         if not self.serial_connection:
             print("GPS module is not connected.")
             raise ConnectionError("GPS module is not connected.")
-        
+
         try:
             while True:
-                line = self.serial_connection.readline().decode('ascii', errors='replace').strip()
+                line = (
+                    self.serial_connection.readline()
+                    .decode("ascii", errors="replace")
+                    .strip()
+                )
                 if line.startswith("$GPGGA"):
                     return self.parse_nmea_sentence(line)
                 self.serial_connection.reset_input_buffer()
@@ -91,60 +109,77 @@ class GPSModule:
             print("Error while reading GPS data: {e}")
         return None, None, None, None, None
 
-def calculate_target_distance_angle(current_coordinate,previous_coordinate,goal_coordinate,TARGET_DISTANCE):
-#    log = logwrite.MyLogging()
+
+def calculate_target_distance_angle(
+    current_coordinate, previous_coordinate, goal_coordinate, TARGET_DISTANCE
+):
+    #    log = logwrite.MyLogging()
     coordinate_diff_goal = {
-        "lat":(goal_coordinate["lat"]-current_coordinate["lat"]),
-        "lon":(goal_coordinate["lon"]-current_coordinate["lon"])
+        "lat": (goal_coordinate["lat"] - current_coordinate["lat"]),
+        "lon": (goal_coordinate["lon"] - current_coordinate["lon"]),
     }
 
-    degree_for_goal = math.atan2(
-        coordinate_diff_goal["lon"],coordinate_diff_goal["lat"]
-    ) / math.pi * 180
+    degree_for_goal = (
+        math.atan2(coordinate_diff_goal["lon"], coordinate_diff_goal["lat"])
+        / math.pi
+        * 180
+    )
 
-#    log.write(f"degree_for_goal:{degree_for_goal}","DEGUB")
+    #    log.write(f"degree_for_goal:{degree_for_goal}","DEGUB")
 
-    coordinate_diff_me = { 'lat' : (current_coordinate['lat'] - previous_coordinate['lat']), 
-                                    'lon' : (current_coordinate['lon'] - previous_coordinate['lon'])}
-    degree_for_me = math.atan2(
-        coordinate_diff_me['lon'], coordinate_diff_me['lat']
-    ) / math.pi * 180  
+    coordinate_diff_me = {
+        "lat": (current_coordinate["lat"] - previous_coordinate["lat"]),
+        "lon": (current_coordinate["lon"] - previous_coordinate["lon"]),
+    }
+    degree_for_me = (
+        math.atan2(coordinate_diff_me["lon"], coordinate_diff_me["lat"]) / math.pi * 180
+    )
 
-#    log.write(f"degree_for_me:{degree_for_me}","DEGUB")
-    
+    #    log.write(f"degree_for_me:{degree_for_me}","DEGUB")
+
     degree = degree_for_goal - degree_for_me
     degree = (degree + 360) if (degree < -180) else degree
     degree = (degree - 360) if (180 < degree) else degree
-   
-    distance = math.sqrt(coordinate_diff_goal["lat"] ** 2 + coordinate_diff_goal["lon"] ** 2) * math.pow(10,5)#m単位で距離を表現
+
+    distance = math.sqrt(
+        coordinate_diff_goal["lat"] ** 2 + coordinate_diff_goal["lon"] ** 2
+    ) * math.pow(
+        10, 5
+    )  # m単位で距離を表現
     if distance <= TARGET_DISTANCE:
-        #5m以内
-        result = {"dir":"Immediate","deg":"0","distance":distance}
+        # 5m以内
+        result = {"dir": "Immediate", "deg": "0", "distance": distance}
         return result
     else:
         if degree <= -45:
-#            log.write(f"degree:{degree},LEFT","DEBUG")
-            result = {"dir":"left","deg":degree,"distance":distance}
+            #            log.write(f"degree:{degree},LEFT","DEBUG")
+            result = {"dir": "left", "deg": degree, "distance": distance}
             return result
         elif degree >= 45:
-#            log.write(f"degree:{degree},RIGHT","DEBUG")
-            result = {"dir":"right","deg":degree,"distance":distance}
+            #            log.write(f"degree:{degree},RIGHT","DEBUG")
+            result = {"dir": "right", "deg": degree, "distance": distance}
             return result
         else:
-#            log.write(f"degree:{degree},FORWARD","DEBUG")
-            result = {"dir":"forward","deg":degree,"distance":distance}
+            #            log.write(f"degree:{degree},FORWARD","DEBUG")
+            result = {"dir": "forward", "deg": degree, "distance": distance}
             return result
 
-def cheak_data(lat,lon,previous_coordinate):
-    if (lat is not None and lon is not None):
+
+def cheak_data(lat, lon, previous_coordinate):
+    if lat is not None and lon is not None:
         return True
-    elif (abs(previous_coordinate['lat'] - lat) >= 0.000003) and (abs(previous_coordinate['lon'] - lon) >= 0.000003):
-        if(abs(previous_coordinate['lat'] - lat) <= 0.000050) and (abs(previous_coordinate['lon'] - lon) <= 0.000050):
+    elif (abs(previous_coordinate["lat"] - lat) >= 0.000003) and (
+        abs(previous_coordinate["lon"] - lon) >= 0.000003
+    ):
+        if (abs(previous_coordinate["lat"] - lat) <= 0.000050) and (
+            abs(previous_coordinate["lon"] - lon) <= 0.000050
+        ):
             return True
         else:
             return False
     else:
         return False
+
 
 # メインプログラム例
 if __name__ == "__main__":
@@ -156,9 +191,13 @@ if __name__ == "__main__":
             try:
                 lat, lon, satellites, utc_time, dop = gps.get_gps_data()
                 if lat is not None and lon is not None:
-                    print(f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}")
+                    print(
+                        f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}"
+                    )
                     # ロギングを追加する場合、以下に記述
-                    logger.info(f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}")
+                    logger.info(
+                        f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}"
+                    )
                 # Example: log_to_file(lat, lon, satellites, time_utc, dop)
                 else:
                     print("Waiting")
@@ -168,8 +207,7 @@ if __name__ == "__main__":
                 print(e)
     except KeyboardInterrupt:
         print("Terminating program.")
-    except Exception as e :
+    except Exception as e:
         print(e)
     finally:
         gps.disconnect()
-

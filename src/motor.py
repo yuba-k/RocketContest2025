@@ -1,9 +1,10 @@
-import RPi.GPIO as GPIO
+import logging
+import math
+import threading
 import time
 from enum import Enum
-import threading
-import math
-import logging
+
+import RPi.GPIO as GPIO
 
 import configloading
 import constants
@@ -12,11 +13,13 @@ import pid_controller
 
 logger = logging.getLogger(__name__)
 
+
 class ADJUST_DUTY_MODE(Enum):
     DIRECTION = 1
     ANGLE = 2
 
-class Motor():
+
+class Motor:
     def __init__(self):
         config = configloading.Config_reader()
         self.duty = constants.DUTY
@@ -27,9 +30,11 @@ class Motor():
         self.left_phase = constants.LEFT_PHASE
 
         self.gyroangle = gyro_angle.GYRO()
-        self.pid = pid_controller.PID(kp=1.2,ki=0.2,kd=0.2,setpoint=0)
+        self.pid = pid_controller.PID(kp=1.2, ki=0.2, kd=0.2, setpoint=0)
 
-        GPIO.setmode(GPIO.BCM)#setmodeでBCMを用いて指定することを宣言　#GPIOピン番号のこと！
+        GPIO.setmode(
+            GPIO.BCM
+        )  # setmodeでBCMを用いて指定することを宣言　#GPIOピン番号のこと！
 
         self.direction = "stop"
 
@@ -40,20 +45,20 @@ class Motor():
         self.initialize_motors()
 
     def setup_gpio(self):
-        GPIO.setup(self.right_pwm,GPIO.OUT)#PWM出力
-        GPIO.setup(self.right_phase,GPIO.OUT)#デジタル出力
-        GPIO.setup(self.left_pwm,GPIO.OUT)#PWM出力
-        GPIO.setup(self.left_phase,GPIO.OUT)#デジタル出力
+        GPIO.setup(self.right_pwm, GPIO.OUT)  # PWM出力
+        GPIO.setup(self.right_phase, GPIO.OUT)  # デジタル出力
+        GPIO.setup(self.left_pwm, GPIO.OUT)  # PWM出力
+        GPIO.setup(self.left_phase, GPIO.OUT)  # デジタル出力
 
     def initialize_motors(self):
-        self.right = GPIO.PWM(self.right_pwm,200)
-        self.left = GPIO.PWM(self.left_pwm,200)
+        self.right = GPIO.PWM(self.right_pwm, 200)
+        self.left = GPIO.PWM(self.left_pwm, 200)
         self.right.start(0)
         self.left.start(0)
 
     def move(self):
-        GPIO.output(self.right_phase,GPIO.LOW)
-        GPIO.output(self.left_phase,GPIO.LOW)
+        GPIO.output(self.right_phase, GPIO.LOW)
+        GPIO.output(self.left_phase, GPIO.LOW)
         while self.running:
             if self.changeFlag:
                 self.changeFlag = False
@@ -62,7 +67,7 @@ class Motor():
             else:
                 time.sleep(0.05)
 
-    def adjust_duty_cycle(self,mode,direction=None,target_angle=0,sec=None):
+    def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None):
         if mode == ADJUST_DUTY_MODE.DIRECTION:
             if direction == "forward":
                 self.right_duty = self.duty
@@ -87,26 +92,30 @@ class Motor():
                 self.right_duty = self.baseduty - pidout
                 self.left_duty = self.baseduty + pidout
                 self.changeFlag = True
-                logger.info(f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty,self.left_duty}")
+                logger.info(
+                    f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty,self.left_duty}"
+                )
                 time.sleep(0.05)
             self.right_duty = self.left_duty = 0
             self.changeFlag = True
-        
+
     def cleanup(self):
         GPIO.cleanup()
+
 
 def main():
     try:
         motor = Motor()
-        threading.Thread(target=motor.move,daemon=True).start()
+        threading.Thread(target=motor.move, daemon=True).start()
         while True:
             deg = int(input("DEGREE="))
             deg = math.radians(deg)
-            motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE,target_angle=deg,sec=10)
+            motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE, target_angle=deg, sec=10)
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
     finally:
-        motor.cleanup()          
+        motor.cleanup()
+
 
 if __name__ == "__main__":
     main()

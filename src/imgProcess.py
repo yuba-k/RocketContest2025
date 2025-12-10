@@ -1,12 +1,13 @@
+import logging
+import os
+import time
 from concurrent.futures import ThreadPoolExecutor
+
 import cv2
 import numpy as np
-import time
-import os
 from ultralytics import YOLO
-import constants
-import logging
 
+import constants
 
 ######################################################
 # 画像の取り扱い：BGR形式                              #
@@ -17,8 +18,9 @@ model = YOLO("../model/last_ncnn_model")
 
 logger = logging.getLogger(__name__)
 
+
 def binaryNoiseCutter(img):
-#    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    #    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
     contours = [c for c in contours if cv2.contourArea(c) > 1000]
@@ -28,10 +30,11 @@ def binaryNoiseCutter(img):
     cv2.drawContours(out, [max(contours, key=cv2.contourArea)], -1, 255, -1)
     return out
 
+
 def opening(img):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
-    kernel = np.array([[0,1,0],[1,1,1],[0,1,0]], np.uint8)
+    kernel = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], np.uint8)
     img = cv2.erode(img, kernel, iterations=3)
     img = cv2.dilate(img, kernel, iterations=3)
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
@@ -42,6 +45,7 @@ def opening(img):
     cv2.drawContours(out, [max(contours, key=cv2.contourArea)], -1, 255, -1)
     return out
 
+
 def red_mask(img):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask1 = cv2.inRange(hsv, (0, 100, 100), (10, 255, 255))
@@ -50,13 +54,18 @@ def red_mask(img):
     masked = cv2.bitwise_and(img, img, mask=mask)
     return opening(masked)
 
+
 def split_by_size(img, size):
     rows = int(np.ceil(img.shape[0] / size[0]))
     cols = int(np.ceil(img.shape[1] / size[1]))
-    return [chunk for row in np.array_split(img, rows, axis=0)
-                  for chunk in np.array_split(row, cols, axis=1)]
+    return [
+        chunk
+        for row in np.array_split(img, rows, axis=0)
+        for chunk in np.array_split(row, cols, axis=1)
+    ]
 
-def get_target_points(img,original):
+
+def get_target_points(img, original):
     try:
         coordinates_x = {}
         coordinates_y = {}
@@ -64,55 +73,90 @@ def get_target_points(img,original):
         temp = get_coordinates(img)
         coordinates_x["top"] = temp[1][0]
         coordinates_y["top"] = temp[0][0]
-        img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 
         temp = list(temp)
         temp.clear()
         temp = get_coordinates(img)
         coordinates_x["left"] = temp[0][0]
         coordinates_y["left"] = abs(constants.HEIGHT - temp[1][0])
-        img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
-        img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 
         temp = list(temp)
         temp.clear()
         temp = get_coordinates(img)
         coordinates_x["right"] = abs(constants.WIDTH - temp[0][0])
         coordinates_y["right"] = temp[1][0]
-        img = cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
+        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 
-        cv2.rectangle(original, (coordinates_x["left"],coordinates_y["top"]),(coordinates_x["right"],coordinates_y["right"]), (1,0,0), 2)
-        cv2.circle(original, (coordinates_x["left"],coordinates_y["left"]), 10, (0,255,255), -1)
-        cv2.circle(original, (coordinates_x["right"],coordinates_y["right"]), 10, (255,255,255), -1)
-        cv2.circle(original, (coordinates_x["top"],coordinates_y["top"]), 10, (255,0,255), -1)
-        return get_center_point(coordinates_x["left"],coordinates_x["right"],coordinates_x["top"]),original
+        cv2.rectangle(
+            original,
+            (coordinates_x["left"], coordinates_y["top"]),
+            (coordinates_x["right"], coordinates_y["right"]),
+            (1, 0, 0),
+            2,
+        )
+        cv2.circle(
+            original,
+            (coordinates_x["left"], coordinates_y["left"]),
+            10,
+            (0, 255, 255),
+            -1,
+        )
+        cv2.circle(
+            original,
+            (coordinates_x["right"], coordinates_y["right"]),
+            10,
+            (255, 255, 255),
+            -1,
+        )
+        cv2.circle(
+            original,
+            (coordinates_x["top"], coordinates_y["top"]),
+            10,
+            (255, 0, 255),
+            -1,
+        )
+        return (
+            get_center_point(
+                coordinates_x["left"], coordinates_x["right"], coordinates_x["top"]
+            ),
+            original,
+        )
     except Exception:
-        return "ERROR",original
-    
-def get_target_points2(binary,img):
-    countors, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
+        return "ERROR", original
+
+
+def get_target_points2(binary, img):
+    countors, _ = cv2.findContours(
+        binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS
+    )
     for c in countors:
         x, y, w, h = cv2.boundingRect(c)
-        cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
-    return get_center_point(x,y), img
+        cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+    return get_center_point(x, y), img
 
-def get_center_point(right,left,top = None):
+
+def get_center_point(right, left, top=None):
     if top is None:
-        result = (right+left)//2
+        result = (right + left) // 2
     else:
-        result = ((right+left)/2 + top)//2
-    if ((right - left) >= (constants.WIDTH * 0.6)):
+        result = ((right + left) / 2 + top) // 2
+    if (right - left) >= (constants.WIDTH * 0.6):
         return "goal"
-    elif result < constants.WIDTH//3:
+    elif result < constants.WIDTH // 3:
         return "left"
-    elif result < constants.WIDTH//3*2:
+    elif result < constants.WIDTH // 3 * 2:
         return "forward"
     else:
         return "right"
-        
+
+
 def get_coordinates(img):
     white_pixels = np.where(img == 255)
     return white_pixels
+
 
 def merge_chunks(chunks, original_shape, size):
     """分割した画像チャンクを1枚に戻す"""
@@ -136,32 +180,35 @@ def merge_chunks(chunks, original_shape, size):
     merged = merged[:h, :w]
     return merged
 
+
 def imgprocess(img):
-    img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
-    chunk =  (img.shape[0] , img.shape[1] // 4 )
-    afImg = split_by_size(img,chunk)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    chunk = (img.shape[0], img.shape[1] // 4)
+    afImg = split_by_size(img, chunk)
     rsImg = list(_executor.map(red_mask, afImg))
-    merge = merge_chunks(rsImg,img.shape,chunk)
+    merge = merge_chunks(rsImg, img.shape, chunk)
     merge = binaryNoiseCutter(merge)
-    result,rsimg = get_target_points(merge,img)
+    result, rsimg = get_target_points(merge, img)
     if result == "ERROR":
-        return "search",rsimg
+        return "search", rsimg
     else:
-        return result,rsimg
+        return result, rsimg
+
 
 def detect_objects_long_range(img):
     ret = model(img)
     x1, x2, y1, y2 = [int(i) for i in ret[0].boxes.xyxy[0]]
-    return get_center_point(x1,x2)
+    return get_center_point(x1, x2)
+
 
 def main():
     path = "../img/original/"
     files = os.listdir(path)
     for fname in files:
         try:
-            img = cv2.imread(path+fname)
-            chunk =  (img.shape[0] , img.shape[1] // 4 )
-            afImg = split_by_size(img,chunk)
+            img = cv2.imread(path + fname)
+            chunk = (img.shape[0], img.shape[1] // 4)
+            afImg = split_by_size(img, chunk)
 
             st = time.time()
             rsImg = list(_executor.map(red_mask, afImg))
@@ -171,13 +218,15 @@ def main():
             for i, im in enumerate(rsImg):
                 cv2.imwrite(f"../img/result{i}.png", im)
 
-            merge = merge_chunks(rsImg,img.shape,chunk)
+            merge = merge_chunks(rsImg, img.shape, chunk)
             merge = binaryNoiseCutter(merge)
-            _,img = get_target_points2(merge,img)
+            _, img = get_target_points2(merge, img)
 
-            cv2.imwrite(f"../img/result/result-{fname}",img)
+            cv2.imwrite(f"../img/result/result-{fname}", img)
 
         except KeyboardInterrupt:
             print("KeyboardInterrupt")
+
+
 if __name__ == "__main__":
     main()
