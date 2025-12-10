@@ -65,16 +65,21 @@ def main():
     mv = motor.Motor()
     logger.info("初期化完了")
 
-    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE,"stop")
-    logger.info("遠距離認識システム")
-    #カメラの起動
-    threading.Thread(target=start_camera, args=(picam,) ,daemon=True).start()
-    #モータの起動
-    threading.Thread(target=mv.move, daemon=True).start()
-    threadlong = threading.Thread(target=approach_long,args=(mv,picam),daemon=True)
-    threadlong.start()
-    threadlong.join()
+    # mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE,"stop")
+    # logger.info("遠距離認識システム")
+    # #カメラの起動
+    # threading.Thread(target=start_camera, args=(picam,) ,daemon=True).start()
+    # #モータの起動
+    # threading.Thread(target=mv.move, daemon=True).start()
+    # threadlong = threading.Thread(target=approach_long,args=(mv,picam),daemon=True)
+    # threadlong.start()
+    # threadlong.join()
+    
     try:
+        #カメラの起動
+        threading.Thread(target=start_camera, args=(picam,) ,daemon=True).start()
+        #モータの起動
+        threading.Thread(target=mv.move, daemon=True).start()
         threading.Thread(target=approach_short,args=(mv,picam), daemon=True).start()
         logger.info("全スレッド起動")
         while not stop_event.is_set():
