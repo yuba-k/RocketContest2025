@@ -88,7 +88,7 @@ class Motor:
             self.gyroangle.reset()
             self.pid.reset(setpoint=target_angle)
             while time.time() - current < sec:
-                gyrodata = self.gyroangle.get_data()
+                gyrodata = self.gyroangle.get_angle()
                 pidout = self.pid.calc(gyrodata)
                 self.right_duty = self.baseduty - pidout
                 self.left_duty = self.baseduty + pidout

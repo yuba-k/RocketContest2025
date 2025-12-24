@@ -32,14 +32,14 @@ class GYRO:
         last_time = time.perf_counter()
         while self.running:
             current_time = time.perf_counter()
-            df = current_time - last_time
+            dt = current_time - last_time
 
             raw_z = self.sensor.gyro[2] - self.offset_z
 
             if abs(raw_z) < 0.005:
                 raw_z = 0
 
-            self.gyro_z += raw_z * dict
+            self.gyro_z += raw_z * dt
             
             last_time = current_time
             time.sleep(self.sample_rate)
