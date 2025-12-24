@@ -52,7 +52,7 @@ def approach_short(mv, picam):
         except queue.Empty:
             continue
         cmd, rs = imgProcess.imgprocess(frame)
-        picam.save(rs, "../img/result/{cnt}test_cv2.jpg", camera2.RGB)
+        picam.save(rs, "../img/result/{cnt}test_cv2.jpg", camera2.COLOR_MODE.RGB)
         if cmd == "goal":
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
             logger.info("ゴールしました")

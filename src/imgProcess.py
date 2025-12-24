@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import cv2
 import numpy as np
-from ultralytics import YOLO
+#from ultralytics import YOLO
 
 import constants
 
@@ -14,7 +14,7 @@ import constants
 ######################################################
 
 _executor = ThreadPoolExecutor(max_workers=8)
-model = YOLO("../model/last_ncnn_model")
+#model = YOLO("../model/last_ncnn_model")
 
 logger = logging.getLogger(__name__)
 
