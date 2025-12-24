@@ -83,6 +83,7 @@ class Motor:
             self.changeFlag = True
             logger.info(f"Direction:{direction},Duty:{self.right_duty,self.left_duty}")
         elif mode == ADJUST_DUTY_MODE.ANGLE:
+            count = 0
             current = time.time()
             self.gyroangle.reset()
             self.pid.reset(setpoint=target_angle)
@@ -95,6 +96,11 @@ class Motor:
                 logger.info(
                     f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty,self.left_duty}"
                 )
+                error = target_angle - gyrodata
+                if abs(error) - math.radians(1):
+                    count += 1
+                    if count >5:
+                        break
                 time.sleep(0.05)
             self.right_duty = self.left_duty = 0
             self.changeFlag = True
