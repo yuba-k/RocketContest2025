@@ -52,3 +52,13 @@ class GYRO:
 
     def stop(self):
         self.running = False
+
+def main():
+    gyro = GYRO()
+    while True:
+        gyro_z = gyro.get_angle()
+        print(f"{gyro_z:.3f}°")
+        time.sleep(0.05)
+
+if __name__ == "__main__":
+    main()
