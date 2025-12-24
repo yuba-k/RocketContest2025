@@ -26,7 +26,7 @@ class GYRO:
         for _ in range(samples):
             total += self.sensor.gyro[2]
             time.sleep(0.005)
-        self.offset_z = total / samples
+        self.offset_z = math.degrees(total) / samples
 
     def _update_loop(self):
         last_time = time.perf_counter()
@@ -34,7 +34,7 @@ class GYRO:
             current_time = time.perf_counter()
             dt = current_time - last_time
 
-            raw_z = self.sensor.gyro[2] - self.offset_z
+            raw_z = math.degrees(self.sensor.gyro[2]) - self.offset_z
 
             if abs(raw_z) < 0.005:
                 raw_z = 0

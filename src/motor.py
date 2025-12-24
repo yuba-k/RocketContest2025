@@ -97,7 +97,7 @@ class Motor:
                     f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty,self.left_duty}"
                 )
                 error = target_angle - gyrodata
-                if abs(error) - math.radians(1):
+                if abs(error) < 5:
                     count += 1
                     if count >5:
                         break
@@ -115,7 +115,6 @@ def main():
         threading.Thread(target=motor.move, daemon=True).start()
         while True:
             deg = int(input("DEGREE="))
-            deg = math.radians(deg)
             motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE, target_angle=deg, sec=10)
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
