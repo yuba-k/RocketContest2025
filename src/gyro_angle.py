@@ -14,7 +14,7 @@ class GYRO:
         self.gyro_z = 0.0
         self.offset_z = 0.0
         self.sample_rate = sample_rate
-        self._lasttime = None
+        self.running = True
 
         self._calibrate()
 
