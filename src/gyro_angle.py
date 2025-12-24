@@ -31,7 +31,7 @@ class GYRO:
     def _update_loop(self):
         last_time = time.perf_counter()
         while self.running:
-            current_time = time.pref_counter()
+            current_time = time.perf_counter()
             df = current_time - last_time
 
             raw_z = self.sensor.gyro[2] - self.offset_z
