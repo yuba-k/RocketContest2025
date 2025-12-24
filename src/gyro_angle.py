@@ -1,4 +1,5 @@
 import time
+import math
 
 import board
 from adafruit_lsm6ds.lsm6ds33 import LSM6DS33
@@ -15,7 +16,7 @@ class GYRO:
     def get_data(self):
         """
         Returns:
-            float: 弧度法で累積移動角を返値
+            float: 度数法で累積移動角を返値
         """
         if self._lasttime is None:
             self._lasttime = time.perf_counter()
@@ -24,7 +25,7 @@ class GYRO:
         dt = currenttime - self._lasttime
         row_z = sensor.gyro[2]
         self.gyro_z += row_z * dt
-        return self.gyro_z
+        return math.degrees(self.gyro_z)
 
     def reset(self):
         self.gyro_z = 0.0
