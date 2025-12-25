@@ -41,13 +41,13 @@ def gps_movement(target, current_coordinate, target_distance):
                 pass
             case "left":
                 mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["degree"], sec=4
+                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["degree"], sec=8
                 )
             case "right":
                 mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["degree"], sec=4
+                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["degree"], sec=8
                 )
-        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.ANGLE, target_angle=0, sec=15)
+        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, direction="forward", sec=15)
 
 
 def main():
@@ -64,7 +64,7 @@ def main():
                 current_coordinate["lon"] = lon
                 break
             time.sleep(1)
-        mv.adjust_duty_cycle(mode=motor.ADJUST_DUTY_MODE.ANGLE, target_angle=0, sec=8)
+        mv.adjust_duty_cycle(mode=motor.ADJUST_DUTY_MODE.DIRECTION, direction="forward", sec=8)
         final_coordinate = gps_movement(goal_coordinate, current_coordinate, 5)
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
