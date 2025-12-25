@@ -57,7 +57,7 @@ def main():
     gyro = GYRO()
     while True:
         gyro_z = gyro.get_angle()
-        print(f"{gyro_z:.3f}°")
+        print(f"{gyro_z:3.3f}°")
         time.sleep(0.05)
 
 if __name__ == "__main__":
