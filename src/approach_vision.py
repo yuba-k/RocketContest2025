@@ -11,9 +11,10 @@ import motor
 frame_q = queue.Queue(maxsize=1)
 stop_event = threading.Event()
 
-# ログの設定
-logger = logging.getLogger(__name__)
-logging.config.fileConfig("../config/logconfig.ini")
+
+def init_log():
+    # ログの設定
+    logging.config.fileConfig("../config/logconfig.ini")
 
 
 def start_camera(picam):
@@ -62,10 +63,11 @@ def approach_short(mv, picam):
 
 
 def main():
-    logger.info("CanSat起動")
+    init_log()
+    logging.info("CanSat起動")
     picam = camera2.Camera()
     mv = motor.Motor()
-    logger.info("初期化完了")
+    logging.info("初期化完了")
 
     # mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE,"stop")
     # logger.info("遠距離認識システム")
@@ -83,7 +85,7 @@ def main():
         # モータの起動
         threading.Thread(target=mv.move, daemon=True).start()
         threading.Thread(target=approach_short, args=(mv, picam), daemon=True).start()
-        logger.info("全スレッド起動")
+        logging.info("全スレッド起動")
         while not stop_event.is_set():
             time.sleep(1)
     finally:
@@ -91,7 +93,7 @@ def main():
         stop_event.set()
         picam.disconnect()
         mv.cleanup()
-        logger.info("正常に終了しました")
+        logging.info("正常に終了しました")
 
 
 if __name__ == "__main__":

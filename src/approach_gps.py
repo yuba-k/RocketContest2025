@@ -10,15 +10,13 @@ import motor
 gps = None
 mv = None
 
-logger = logging.getLogger(__name__)
-logging.config.fileConfig("../config/logconfig.ini")
-
 
 def init():
     global gps, mv
     gps = gpsnew.GPSModule()
     mv = motor.Motor()
     gps.connect()
+    logging.config.fileConfig("../config/logconfig.ini")
 
 
 def gps_movement(target, current_coordinate, target_distance):
