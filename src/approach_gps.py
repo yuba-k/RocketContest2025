@@ -39,11 +39,11 @@ def gps_movement(target, current_coordinate, target_distance):
                 pass
             case "left":
                 mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["degree"], sec=8
+                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["deg"], sec=8
                 )
             case "right":
                 mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["degree"], sec=8
+                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["deg"], sec=8
                 )
         mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, direction="forward", sec=15)
 
