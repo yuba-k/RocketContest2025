@@ -13,10 +13,10 @@ mv = None
 
 def init():
     global gps, mv
+    logging.config.fileConfig("../config/logconfig.ini")
     gps = gpsnew.GPSModule()
     mv = motor.Motor()
     gps.connect()
-    logging.config.fileConfig("../config/logconfig.ini")
 
 
 def gps_movement(target, current_coordinate, target_distance):
@@ -38,13 +38,16 @@ def gps_movement(target, current_coordinate, target_distance):
             case "forward":
                 pass
             case "left":
+                logging.info(f"deg = {result['deg']}, left")
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["deg"], sec=8
                 )
             case "right":
+                logging.info(f"deg = {result['deg']}, right")
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["deg"], sec=8
                 )
+        logging.info(f"FORWARD")
         mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, direction="forward", sec=15)
 
 
