@@ -24,9 +24,10 @@ def gps_movement(target, current_coordinate, target_distance):
         previous_coordinate = current_coordinate.copy()
         while True:
             lat, lon, satellites, utc_time, dop = gps.get_gps_data()
-            if gpsnew.cheak_data(lat, lon, previous_coordinate):
+            if gpsnew.check_data(lat, lon, previous_coordinate):
                 break
             else:
+                logging.warning("")
                 time.sleep(1)
         current_coordinate = {"lat": lat, "lon": lon}
         result = gpsnew.calculate_target_distance_angle(
@@ -34,7 +35,13 @@ def gps_movement(target, current_coordinate, target_distance):
         )
         match result["dir"]:
             case "Immediate":
+                logging.info("GOAL!!!!!")
                 return current_coordinate
+            case None:
+                logging.info(f"deg = {result['deg']}")
+                mv.adjust_duty_cycle(
+                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["deg"], sec=8
+                )
             case "forward":
                 pass
             case "left":
@@ -70,6 +77,7 @@ def main():
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
     finally:
+        logging.info("FINISH")
         gps.disconnect()
         mv.running = False
         mv.cleanup()

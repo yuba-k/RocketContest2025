@@ -151,6 +151,7 @@ def calculate_target_distance_angle(
         result = {"dir": "Immediate", "deg": "0", "distance": distance}
         return result
     else:
+        return {"dir": None, "deg": degree, "distance": distance}
         if degree <= -45:
             #            log.write(f"degree:{degree},LEFT","DEBUG")
             result = {"dir": "left", "deg": degree, "distance": distance}
@@ -165,7 +166,7 @@ def calculate_target_distance_angle(
             return result
 
 
-def cheak_data(lat, lon, previous_coordinate):
+def check_data(lat, lon, previous_coordinate):
     if lat is not None and lon is not None:
         return True
     elif (abs(previous_coordinate["lat"] - lat) >= 0.000003) and (
