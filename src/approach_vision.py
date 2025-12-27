@@ -56,7 +56,7 @@ def approach_short(mv, picam):
         picam.save(rs, "../img/result/{cnt}test_cv2.jpg", camera2.COLOR_MODE.RGB)
         if cmd == "goal":
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
-            logger.info("ゴールしました")
+            logging.info("ゴールしました")
             stop_event.set()
         mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
         cnt += 1

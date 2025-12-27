@@ -80,21 +80,22 @@ class Motor:
                 self.left_duty = self.duty * 0.6
             else:
                 self.right_duty = self.left_duty = 0
+            logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
             self.changeFlag = True
-            logger.info(f"Direction:{direction},Duty:{self.right_duty,self.left_duty}")
         elif mode == ADJUST_DUTY_MODE.ANGLE:
             count = 0
             current = time.time()
             self.gyroangle.reset()
             self.pid.reset(setpoint=target_angle)
+            logger.info(f"PID control is performed to achieve {target_angle}.")
             while time.time() - current < sec:
                 gyrodata = self.gyroangle.get_angle()
                 pidout = self.pid.calc(gyrodata)
                 self.right_duty = self.baseduty - pidout
                 self.left_duty = self.baseduty + pidout
                 self.changeFlag = True
-                logger.info(
-                    f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty,self.left_duty}"
+                logger.debug(
+                    f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty},{self.left_duty}"
                 )
                 error = target_angle - gyrodata
                 if abs(error) < 5:

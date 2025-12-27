@@ -15,8 +15,9 @@ def init():
     global gps, mv
     logging.config.fileConfig("../config/logconfig.ini")
     gps = gpsnew.GPSModule()
-    mv = motor.Motor()
     gps.connect()
+    mv = motor.Motor()
+    logging.info("Initialization completed successfully")
 
 
 def gps_movement(target, current_coordinate, target_distance):
@@ -27,8 +28,9 @@ def gps_movement(target, current_coordinate, target_distance):
             if gpsnew.check_data(lat, lon, previous_coordinate):
                 break
             else:
-                logging.warning("")
+                logging.warning("The acquired location information is invalid. It is an abnormal value or NULL.")
                 time.sleep(1)
+        logging.info(f"{lat},{lon}\t{satellites}\t{dop}")
         current_coordinate = {"lat": lat, "lon": lon}
         result = gpsnew.calculate_target_distance_angle(
             current_coordinate, previous_coordinate, target, target_distance
@@ -38,7 +40,7 @@ def gps_movement(target, current_coordinate, target_distance):
                 logging.info("GOAL!!!!!")
                 return current_coordinate
             case None:
-                logging.info(f"deg = {result['deg']}")
+                logging.info(f"deg = {result['deg']}, dis = {result["distance"]}")
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["deg"], sec=8
                 )
@@ -59,6 +61,7 @@ def gps_movement(target, current_coordinate, target_distance):
 
 
 def main():
+    logging.info("Started")
     init()
     goal_coordinate = {"lat": constants.GOAL_LAT, "lon": constants.GOAL_LON}
     current_coordinate = {"lat": None, "lon": None}
@@ -71,11 +74,13 @@ def main():
                 current_coordinate["lat"] = lat
                 current_coordinate["lon"] = lon
                 break
+            else:
+                logging.warning("Location information cannot be obtained correctly.")
             time.sleep(1)
         mv.adjust_duty_cycle(mode=motor.ADJUST_DUTY_MODE.DIRECTION, direction="forward", sec=8)
         final_coordinate = gps_movement(goal_coordinate, current_coordinate, 5)
     except KeyboardInterrupt:
-        print("KeyboardInterrupt")
+        logging.info("KeyboardInterrupt")
     finally:
         logging.info("FINISH")
         gps.disconnect()

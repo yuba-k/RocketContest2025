@@ -22,9 +22,9 @@ class GPSModule:
         """シリアル接続を初期化"""
         try:
             self.serial_connection = serial.Serial(self.port, self.baud_rate, timeout=1)
-            print("GPS module connected.")
+            logger.info("GPS module connected.")
         except Exception as e:
-            print("Failed to connect to GPS module")
+            logger.critical("Failed to connect to GPS module")
             raise ConnectionError(f"Failed to connect to GPS module: {e}")
 
     def disconnect(self):
