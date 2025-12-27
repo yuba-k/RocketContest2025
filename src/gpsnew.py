@@ -154,9 +154,7 @@ def calculate_target_distance_angle(
         return {"dir": None, "deg": degree, "distance": distance}
 
 def check_data(lat, lon, previous_coordinate):
-    if lat is not None and lon is not None:
-        return True
-    elif (abs(previous_coordinate["lat"] - lat) >= 0.000003) and (
+    if (abs(previous_coordinate["lat"] - lat) >= 0.000003) and (
         abs(previous_coordinate["lon"] - lon) >= 0.000003
     ):
         if (abs(previous_coordinate["lat"] - lat) <= 0.000050) and (
