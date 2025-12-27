@@ -152,24 +152,9 @@ def calculate_target_distance_angle(
         return result
     else:
         return {"dir": None, "deg": degree, "distance": distance}
-        if degree <= -45:
-            #            log.write(f"degree:{degree},LEFT","DEBUG")
-            result = {"dir": "left", "deg": degree, "distance": distance}
-            return result
-        elif degree >= 45:
-            #            log.write(f"degree:{degree},RIGHT","DEBUG")
-            result = {"dir": "right", "deg": degree, "distance": distance}
-            return result
-        else:
-            #            log.write(f"degree:{degree},FORWARD","DEBUG")
-            result = {"dir": "forward", "deg": degree, "distance": distance}
-            return result
-
 
 def check_data(lat, lon, previous_coordinate):
-    if lat is not None and lon is not None:
-        return True
-    elif (abs(previous_coordinate["lat"] - lat) >= 0.000003) and (
+    if (abs(previous_coordinate["lat"] - lat) >= 0.000003) and (
         abs(previous_coordinate["lon"] - lon) >= 0.000003
     ):
         if (abs(previous_coordinate["lat"] - lat) <= 0.000050) and (

@@ -107,6 +107,7 @@ class Motor:
             self.changeFlag = True
 
     def cleanup(self):
+        self.gyroangle.stop()
         GPIO.cleanup()
 
 
