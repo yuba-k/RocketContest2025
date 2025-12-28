@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 
 def binaryNoiseCutter(img):
     #    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, img = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
+    _, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
-    contours = [c for c in contours if cv2.contourArea(c) > 1000]
+    contours = [c for c in contours if cv2.contourArea(c) > 100]
     out = np.zeros_like(img)
     if not contours:
         return out
@@ -33,7 +33,7 @@ def binaryNoiseCutter(img):
 
 def opening(img):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+    _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
     kernel = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], np.uint8)
     img = cv2.erode(img, kernel, iterations=3)
     img = cv2.dilate(img, kernel, iterations=3)
@@ -132,6 +132,9 @@ def get_target_points2(binary, img):
     countors, _ = cv2.findContours(
         binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS
     )
+    if countors == ():
+        cv2.putText(img, text = "there is not", org = (100,100), fontFace = cv2.FONT_HERSHEY_SIMPLEX, fontScale = 1, color = (0,0,0), thickness = 3)
+        return None, img
     for c in countors:
         x, y, w, h = cv2.boundingRect(c)
         cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
@@ -202,26 +205,23 @@ def detect_objects_long_range(img):
 
 
 def main():
-    path = "../img/original/"
+    path = ""
     files = os.listdir(path)
     for fname in files:
         try:
-            img = cv2.imread(path + fname)
+            print(fname)
+            img = cv2.imread(os.path.join(path,fname))
             chunk = (img.shape[0], img.shape[1] // 4)
             afImg = split_by_size(img, chunk)
-
             st = time.time()
             rsImg = list(_executor.map(red_mask, afImg))
             print(f"終了: {time.time() - st:.3f}秒")
 
             os.makedirs("img", exist_ok=True)
-            for i, im in enumerate(rsImg):
-                cv2.imwrite(f"../img/result{i}.png", im)
 
             merge = merge_chunks(rsImg, img.shape, chunk)
             merge = binaryNoiseCutter(merge)
             _, img = get_target_points2(merge, img)
-
             cv2.imwrite(f"../img/result/result-{fname}", img)
 
         except KeyboardInterrupt:
