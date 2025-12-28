@@ -65,69 +65,6 @@ def split_by_size(img, size):
     ]
 
 
-def get_target_points(img, original):
-    try:
-        coordinates_x = {}
-        coordinates_y = {}
-
-        temp = get_coordinates(img)
-        coordinates_x["top"] = temp[1][0]
-        coordinates_y["top"] = temp[0][0]
-        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-
-        temp = list(temp)
-        temp.clear()
-        temp = get_coordinates(img)
-        coordinates_x["left"] = temp[0][0]
-        coordinates_y["left"] = abs(constants.HEIGHT - temp[1][0])
-        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-
-        temp = list(temp)
-        temp.clear()
-        temp = get_coordinates(img)
-        coordinates_x["right"] = abs(constants.WIDTH - temp[0][0])
-        coordinates_y["right"] = temp[1][0]
-        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-
-        cv2.rectangle(
-            original,
-            (coordinates_x["left"], coordinates_y["top"]),
-            (coordinates_x["right"], coordinates_y["right"]),
-            (1, 0, 0),
-            2,
-        )
-        cv2.circle(
-            original,
-            (coordinates_x["left"], coordinates_y["left"]),
-            10,
-            (0, 255, 255),
-            -1,
-        )
-        cv2.circle(
-            original,
-            (coordinates_x["right"], coordinates_y["right"]),
-            10,
-            (255, 255, 255),
-            -1,
-        )
-        cv2.circle(
-            original,
-            (coordinates_x["top"], coordinates_y["top"]),
-            10,
-            (255, 0, 255),
-            -1,
-        )
-        return (
-            get_center_point(
-                coordinates_x["left"], coordinates_x["right"], coordinates_x["top"]
-            ),
-            original,
-        )
-    except Exception:
-        return "ERROR", original
-
-
 def get_target_points2(binary, img):
     countors, _ = cv2.findContours(
         binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS
@@ -191,7 +128,7 @@ def imgprocess(img):
     rsImg = list(_executor.map(red_mask, afImg))
     merge = merge_chunks(rsImg, img.shape, chunk)
     merge = binaryNoiseCutter(merge)
-    result, rsimg = get_target_points(merge, img)
+    result, rsimg = get_target_points2(merge, img)
     if result == "ERROR":
         return "search", rsimg
     else:
