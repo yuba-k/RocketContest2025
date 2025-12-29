@@ -7,20 +7,17 @@ import constants
 import gpsnew
 import motor
 
-gps = None
-mv = None
-
 
 def init():
-    global gps, mv
     logging.config.fileConfig("../config/logconfig.ini")
     gps = gpsnew.GPSModule()
     gps.connect()
     mv = motor.Motor()
     logging.info("Initialization completed successfully")
+    return gps, mv
 
 
-def gps_movement(target, current_coordinate, target_distance):
+def gps_movement(target, current_coordinate, target_distance, gps, mv):
     while True:
         previous_coordinate = current_coordinate.copy()
         while True:
@@ -40,19 +37,7 @@ def gps_movement(target, current_coordinate, target_distance):
                 logging.info("GOAL!!!!!")
                 return current_coordinate
             case None:
-                logging.info(f"deg = {result['deg']}, dis = {result["distance"]}")
-                mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["deg"], sec=8
-                )
-            case "forward":
-                pass
-            case "left":
-                logging.info(f"deg = {result['deg']}, left")
-                mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["deg"], sec=8
-                )
-            case "right":
-                logging.info(f"deg = {result['deg']}, right")
+                logging.info(f"deg = {result['deg']}, dis = {result['distance']}")
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.ANGLE, target_angle=result["deg"], sec=8
                 )
@@ -62,7 +47,7 @@ def gps_movement(target, current_coordinate, target_distance):
 
 def main():
     logging.info("Started")
-    init()
+    gps, mv = init()
     goal_coordinate = {"lat": constants.GOAL_LAT, "lon": constants.GOAL_LON}
     current_coordinate = {"lat": None, "lon": None}
     try:
@@ -78,7 +63,7 @@ def main():
                 logging.warning("Location information cannot be obtained correctly.")
             time.sleep(1)
         mv.adjust_duty_cycle(mode=motor.ADJUST_DUTY_MODE.DIRECTION, direction="forward", sec=8)
-        final_coordinate = gps_movement(goal_coordinate, current_coordinate, 5)
+        final_coordinate = gps_movement(goal_coordinate, current_coordinate, 5, gps, mv)
     except KeyboardInterrupt:
         logging.info("KeyboardInterrupt")
     finally:
