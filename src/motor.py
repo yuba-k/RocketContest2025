@@ -40,17 +40,17 @@ class Motor:
 
         self.running = True
         self.changeFlag = False
-        self.setup_gpio()
+        self._setup_gpio()
 
-        self.initialize_motors()
+        self._initialize_motors()
 
-    def setup_gpio(self):
+    def _setup_gpio(self):
         GPIO.setup(self.right_pwm, GPIO.OUT)  # PWM出力
         GPIO.setup(self.right_phase, GPIO.OUT)  # デジタル出力
         GPIO.setup(self.left_pwm, GPIO.OUT)  # PWM出力
         GPIO.setup(self.left_phase, GPIO.OUT)  # デジタル出力
 
-    def initialize_motors(self):
+    def _initialize_motors(self):
         self.right = GPIO.PWM(self.right_pwm, 200)
         self.left = GPIO.PWM(self.left_pwm, 200)
         self.right.start(0)

@@ -33,7 +33,7 @@ class GPSModule:
             self.serial_connection.close()
             print("GPS module disconnected.")
 
-    def parse_nmea_sentence(
+    def _parse_nmea_sentence(
         self, sentence: str
     ) -> Tuple[
         Optional[float], Optional[float], Optional[int], Optional[str], Optional[float]
@@ -101,7 +101,7 @@ class GPSModule:
                     .strip()
                 )
                 if line.startswith("$GPGGA"):
-                    return self.parse_nmea_sentence(line)
+                    return self._parse_nmea_sentence(line)
                 self.serial_connection.reset_input_buffer()
         except KeyboardInterrupt:
             print("GPS data fetching stopped by user.")

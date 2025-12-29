@@ -14,11 +14,11 @@ class FMemitter:
         self.i2c = smbus.SMBus(1)
         self.addr = constants.VOICE_SYNTH_ADDR
 
-    def stringToAscii(self, message):
+    def _stringToAscii(self, message):
         string = [int(hex(ord(s)), 0) for s in message]
         return string
 
-    def sendDataViaI2C(self, string):
+    def _sendDataViaI2C(self, string):
         try:
             self.i2c.write_i2c_block_data(self.addr, 0, string)
             time.sleep(1)
@@ -27,8 +27,8 @@ class FMemitter:
             logger.error(f"OSerror:{e}")
 
     def transmitFMMessage(self, message):
-        string = self.stringToAscii(message)
-        self.sendDataViaI2C(string)
+        string = self._stringToAscii(message)
+        self._sendDataViaI2C(string)
 
 
 def main():
