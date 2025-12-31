@@ -28,6 +28,8 @@ stateDiagram-v2
     WAIT_GPS_FIX --> GOAL : 目標まで10m以内 & !camera_available
     GET_PHOTO --> TARGET_DETECTION
     TARGET_DETECTION --> JUDGE_GOAL
+    TARGET_DETECTION --> GET_PHOTO : NoTarget
+    TARGET_DETECTION --> WAIT_GPS_FIX : Notargetが10回以上
     JUDGE_GOAL --> GET_PHOTO : 横長が8割以下
     JUDGE_GOAL --> GOAL
     GOAL --> [*] : ゴール判定
