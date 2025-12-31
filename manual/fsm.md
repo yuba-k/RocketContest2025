@@ -2,18 +2,20 @@
 stateDiagram-v2
     [*] --> INIT : 電源投入
     state INIT {
-        [*] --> INIT_GPS
-        INIT_GPS --> INIT_GYRO
-        note left of INIT_GYRO
-            gyro_available = 6軸センサ初期化結果(T/F)
-        end note
-        INIT_GYRO --> INIT_CAMERA
+        [*] --> INIT_START
+        INIT_START --> INIT_CAMERA
         note left of INIT_CAMERA
-            camera_available = PiCamera初期化結果(T/F)
+            camera_available = カメラ初期結果(T/F)
         end note
-
+        INIT_CAMERA --> INIT_MOTOR
+        INIT_MOTOR --> INIT_GYRO
+        note left of INIT_GYRO
+            gyro_available = 6軸初期結果(T/F)
+        end note
+        INIT_GYRO --> INIT_GPS
     }
-    INIT_GPS --> ERROR : GPS_CONNECTION_ERROR
+    INIT_MOTOR --> ERROR : MOTOR_INIT_ERROR
+    INIT_GPS --> ERROR : GPS_INIT_ERROR
     INIT_CAMERA --> WAIT_DEPLOYMENT
     WAIT_DEPLOYMENT --> WAIT_DEPLOYMENT : パラシュート未展開
     WAIT_DEPLOYMENT --> WAIT_GPS_FIX : パラシュート展開から30s経過
@@ -28,9 +30,11 @@ stateDiagram-v2
     WAIT_GPS_FIX --> GOAL : 目標まで10m以内 & !camera_available
     GET_PHOTO --> TARGET_DETECTION
     TARGET_DETECTION --> JUDGE_GOAL
-    TARGET_DETECTION --> GET_PHOTO : NoTarget
+    TARGET_DETECTION --> MOVE_SERCH : NoTarget
+    MOVE_SERCH --> GET_PHOTO
     TARGET_DETECTION --> WAIT_GPS_FIX : Notargetが10回以上
-    JUDGE_GOAL --> GET_PHOTO : 横長が8割以下
+    JUDGE_GOAL --> MOVE : 横長が8割以下
+    MOVE --> GET_PHOTO
     JUDGE_GOAL --> GOAL
     GOAL --> [*] : ゴール判定
     ERROR --> GOAL
