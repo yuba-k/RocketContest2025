@@ -1,10 +1,16 @@
 import configparser
+import logging
+
+logger = logging.getLogger()
 
 
 class Config_reader:
     def __init__(self):
-        self.config = configparser.ConfigParser()
-        self.config.read("../config/cansat.ini", encoding="utf-8")
+        try:
+            self.config = configparser.ConfigParser()
+            self.config.read("../config/cansat.ini", encoding="utf-8")
+        except FileNotFoundError as e:
+            logger.error(f"FIleNotFoudError\n{e}")
 
     def reader(self, key, value, style):
         var = self.config.get(key, value)

@@ -4,6 +4,8 @@ from typing import Optional, Tuple
 
 import serial
 
+import error
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +27,7 @@ class GPSModule:
             logger.info("GPS module connected.")
         except Exception as e:
             logger.critical("Failed to connect to GPS module")
-            raise ConnectionError(f"Failed to connect to GPS module: {e}")
+            raise error.ERROR_GPS_CANNOT_CONNECTION(f"Failed to connect to GPS module: {e}")
 
     def disconnect(self):
         """シリアル接続を閉じる"""

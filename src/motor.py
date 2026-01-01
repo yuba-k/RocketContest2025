@@ -8,7 +8,6 @@ import RPi.GPIO as GPIO
 
 import configloading
 import constants
-import gyro_angle
 import pid_controller
 
 logger = logging.getLogger(__name__)
@@ -20,7 +19,7 @@ class ADJUST_DUTY_MODE(Enum):
 
 
 class Motor:
-    def __init__(self):
+    def __init__(self, gyrosensor = None):
         config = configloading.Config_reader()
         self.duty = constants.DUTY
         self.baseduty = constants.BASE_DUTY
@@ -29,7 +28,7 @@ class Motor:
         self.right_phase = constants.RIGHT_PHASE
         self.left_phase = constants.LEFT_PHASE
 
-        self.gyroangle = gyro_angle.GYRO()
+        self.gyroangle = gyrosensor
         self.pid = pid_controller.PID(kp=1.2, ki=0.2, kd=0.2, setpoint=0)
 
         GPIO.setmode(

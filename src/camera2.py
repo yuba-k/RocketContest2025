@@ -1,6 +1,7 @@
 import logging
 import threading
 from enum import Enum
+import error
 
 import cv2
 import numpy as np
@@ -38,8 +39,8 @@ class Camera:
             )
             self.picam.start()
         except Exception as e:
-            logger.error(f"CameraError:{e}")
-            raise e
+            logger.critical("カメラの初期化に失敗しました")
+            raise error.ERROR_CAMERA_INIT(f"カメラの初期化に失敗しました\n{e}")
 
     def cap(self, cnt):
         try:

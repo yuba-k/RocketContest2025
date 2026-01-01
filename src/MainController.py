@@ -4,10 +4,12 @@ import motor
 import imgProcess
 import start
 import error
+import gyro_angle
 
 import _thread
 import time
 from enum import Enum, auto
+import logging
 
 class state(Enum):
     STATE_INIT = auto()
@@ -34,13 +36,25 @@ def forced_stop(runtime:int):
 
 def init():
     start.init()
-    cm = camera2.Camera()
     try:
-        mv = motor.Motor()
+        cm = camera2.Camera()
+    except error.ERROR_CAMERA_INIT as e:
+        flag.camera_available = False
+        logging.warning(f"縮退動作に移行します\n{e}")
+    try:
+        gyrosensor = gyro_angle.GYRO()
     except error.ERRROR_GYRO_INIT:
         flag.gyro_available = False
-    
-    gps = gpsnew.GPSModule()
+        logging.warning(f"縮退動作に移行します\n{e}")
+    try:
+        mv = motor.Motor(gyrosensor)
+    except error.ERRROR_MOTOR_INIT:
+        raise error.ERROR_MOTOR_INIT("モータの初期化に失敗しました")
+    try:
+        gps = gpsnew.GPSModule()
+        gps.connect()
+    except error.ERROR_GPS_CANNOT_CONNECTION:
+        raise error.ERROR_GPS_CANNOT_CONNECTION("GPSセンサへの接続に失敗しました")
     return cm, mv, gps
 
 def main():
