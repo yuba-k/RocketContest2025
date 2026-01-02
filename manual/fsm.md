@@ -19,15 +19,22 @@ stateDiagram-v2
     INIT_CAMERA --> WAIT_DEPLOYMENT
     WAIT_DEPLOYMENT --> WAIT_DEPLOYMENT : パラシュート未展開
     WAIT_DEPLOYMENT --> WAIT_GPS_FIX : パラシュート展開から30s経過
-    WAIT_GPS_FIX --> MOVE_BY_GPS : 目標まで10m以上
-    WAIT_GPS_FIX --> ESCAPE_RUN : MOVE_BY_GPSを3回繰り返しても進まない場合
-    ESCAPE_RUN --> WAIT_GPS_FIX
+    state WAIT_GPS_FIX {
+        [*] --> WAIT_FIX
+        WAIT_FIX --> GET_DATA
+        GET_DATA --> MOVE_FORWARD
+        MOVE_FORWARD --> [*]
+    }
+    WAIT_GPS_FIX --> GET_GPS_DATA
+    GET_GPS_DATA --> MOVE_BY_GPS : 目標まで10m以上
+    GET_GPS_DATA --> ESCAPE_RUN : MOVE_BY_GPSを3回繰り返しても進まない場合
+    ESCAPE_RUN --> GET_GPS_DATA
     MOVE_BY_GPS --> MOVE_DIRECTION : !gyro_available
     MOVE_BY_GPS --> MOVE_PID : gyro_available
-    MOVE_DIRECTION --> WAIT_GPS_FIX
-    MOVE_PID --> WAIT_GPS_FIX
-    WAIT_GPS_FIX --> GET_PHOTO : 目標まで10m以内 & camera_available
-    WAIT_GPS_FIX --> GOAL : 目標まで10m以内 & !camera_available
+    MOVE_DIRECTION --> GET_GPS_DATA
+    MOVE_PID --> GET_GPS_DATA
+    GET_GPS_DATA --> GET_PHOTO : 目標まで10m以内 & camera_available
+    GET_GPS_DATA --> GOAL : 目標まで10m以内 & !camera_available
     GET_PHOTO --> TARGET_DETECTION
     TARGET_DETECTION --> JUDGE_GOAL
     TARGET_DETECTION --> MOVE_SERCH : NoTarget

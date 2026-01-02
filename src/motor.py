@@ -39,6 +39,8 @@ class Motor:
 
         self.running = True
         self.changeFlag = False
+        self._lock = threading.Lock()
+        self._stop_time = 0
         self._setup_gpio()
 
         self._initialize_motors()
@@ -59,6 +61,11 @@ class Motor:
         GPIO.output(self.right_phase, GPIO.LOW)
         GPIO.output(self.left_phase, GPIO.LOW)
         while self.running:
+            with self._lock:
+                if time.time() > self._stop_time:
+                    self._stop_time = 0
+                    self.right_duty = self.left_duty = 0
+                    self.changeFlag = True
             if self.changeFlag:
                 self.changeFlag = False
                 self.right.ChangeDutyCycle(self.right_duty)
@@ -68,6 +75,9 @@ class Motor:
 
     def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None):
         if mode == ADJUST_DUTY_MODE.DIRECTION:
+            with sec._lock:
+                if sec is not None:
+                    self._stop_time = time.time() + sec
             if direction == "forward":
                 self.right_duty = self.duty
                 self.left_duty = self.duty
@@ -106,7 +116,9 @@ class Motor:
             self.changeFlag = True
 
     def cleanup(self):
-        self.gyroangle.stop()
+        self.running = False
+        if self.gyroangle is not None:
+            self.gyroangle.stop()
         GPIO.cleanup()
 
 

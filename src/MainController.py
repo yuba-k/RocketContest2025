@@ -15,13 +15,15 @@ class state(Enum):
     STATE_INIT = auto()
     STATE_WAIT_DEPLOYMENT = auto()
     STATE_WAIT_GPS_FIX = auto()
+    STATE_GET_GPS_DATA = auto()
     STATE_MOVE_BY_GPS = auto()
     STATE_MOVE_DIRECTION = auto()
     STATE_MOVE_PID = auto()
     STATE_GET_PHOTO = auto()
     STATE_TARGET_DETECTION = auto()
+    STATE_MOVE = auto()
     STATE_JUDGE_GOAL = auto()
-    STATE_JUDGE_GOAL = auto()
+    STATE_GOAL = auto()
 
 
 class flag():
@@ -29,6 +31,7 @@ class flag():
     camera_available = True
 
 def forced_stop(runtime:int):
+    logging.info(f"強制終了命令をセット:{runtime}s")
     fintime = time.time() + runtime
     while fintime - fintime > 0:
         time.sleep(10)
@@ -58,12 +61,77 @@ def init():
     return cm, mv, gps
 
 def main():
+    NEXT_STATE = state.STATE_INIT
     cm, mv, gps = init()
 
+    current_position = {"lat":0.0, "lon":0.0}
+    past_position = {"lat":0.0, "lon":0.0}
+    imgcnt = 0
+
+    NEXT_STATE = state.STATE_WAIT_DEPLOYMENT
     start.awaiting()
+
 
     # 強制終了命令を待機
     _thread.start_new_thread(forced_stop, (18*60))
+
+    NEXT_STATE = state.STATE_WAIT_GPS_FIX
+
+    while True:
+        if NEXT_STATE == state.STATE_WAIT_GPS_FIX:
+            lat, lon, satellites, utc_time, dop = gps.get_gps_data()
+            logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
+            current_position = {"lat":lat, "lon":lon}
+            mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=10)
+            NEXT_STATE = state.STATE_GET_GPS_DATA
+        elif NEXT_STATE == state.STATE_GET_GPS_DATA:
+            past_position = current_position.copy()
+            while True:
+                lat, lon, satellites, utc_time, dop = gps.get_gps_data()
+                if gpsnew.is_correct(lat,lon, past_position):
+                    break
+                else:
+                    logging.error(f"上限値あるいは下限値を超過しています:{lat},{lon}")
+                    time.sleep(1)
+            logging.info(f"現在位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
+            current_position = {"lat":lat, "lon":lon}
+            calculate_result = gpsnew.calculate_target_distance_angle(current_position, past_position)
+            if calculate_result["dir"] == "Immediate":
+                NEXT_STATE = state.STATE_GET_PHOTO
+            elif flag.gyro_available:
+                NEXT_STATE = state.STATE_MOVE_PID
+            else:
+                NEXT_STATE = state.STATE_MOVE_DIRECTION
+        elif NEXT_STATE == state.STATE_MOVE_PID:
+            mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.ANGLE, target_angle = calculate_result["deg"])
+            NEXT_STATE = state.STATE_GET_GPS_DATA
+        elif NEXT_STATE == state.STATE_MOVE_DIRECTION:
+            mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, calculate_result["dir"], sec = 4*abs(calculate_result["deg"])/180)
+            NEXT_STATE = state.STATE_GET_GPS_DATA
+        elif NEXT_STATE == state.STATE_GET_PHOTO:
+            img = cm.cap(imgcnt)
+            NEXT_STATE = state.STATE_TARGET_DETECTION
+        elif NEXT_STATE == state.STATE_TARGET_DETECTION:
+            dir, afimg = imgProcess.imgprocess(img)
+            cm.save(afimg, f"../img/result/{imgcnt}afimg.jpg")
+            if dir == "goal":
+                NEXT_STATE = state.STATE_GOAL
+            else:
+                NEXT_STATE = state.STATE_MOVE
+        elif NEXT_STATE == state.STATE_MOVE:
+            if dir == "forward":
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 80)
+            elif dir == "right" or dir == "left":
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4*45/180)
+            elif dir == "search":
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4*60/180)
+        elif NEXT_STATE == state.STATE_GOAL:
+            break
+    cm.disconnect
+    mv.cleanup
+    gps.disconnect
+            
+
 
 if __name__ == "__main__":
     main()

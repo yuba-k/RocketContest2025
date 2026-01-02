@@ -152,10 +152,18 @@ def calculate_target_distance_angle(
         # 5m以内
         result = {"dir": "Immediate", "deg": "0", "distance": distance}
         return result
+    
+    if degree <= -45:
+        result = {"dir": "left", "deg": degree, "distance": distance}
+        return result
+    elif degree >= 45:
+        result = {"dir": "right", "deg": degree, "distance": distance}
+        return result
     else:
-        return {"dir": None, "deg": degree, "distance": distance}
+        result = {"dir": "forward", "deg": degree, "distance": distance}
+        return result
 
-def check_data(lat, lon, previous_coordinate):
+def is_correct(lat, lon, previous_coordinate):
     if (abs(previous_coordinate["lat"] - lat) >= 0.000003) and (
         abs(previous_coordinate["lon"] - lon) >= 0.000003
     ):
