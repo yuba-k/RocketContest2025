@@ -66,6 +66,7 @@ def main():
 
     current_position = {"lat":0.0, "lon":0.0}
     past_position = {"lat":0.0, "lon":0.0}
+    noimgcnt = 0
     imgcnt = 0
 
     NEXT_STATE = state.STATE_WAIT_DEPLOYMENT
@@ -116,6 +117,13 @@ def main():
             cm.save(afimg, f"../img/result/{imgcnt}afimg.jpg")
             if dir == "goal":
                 NEXT_STATE = state.STATE_GOAL
+            elif dir == "search":
+                if noimgcnt > 10:
+                    NEXT_STATE = state.STATE_WAIT_GPS_FIX
+                else:
+                    noimgcnt += 1
+                    NEXT_STATE = state.STATE_MOVE
+                    dir = "right"
             else:
                 NEXT_STATE = state.STATE_MOVE
         elif NEXT_STATE == state.STATE_MOVE:
