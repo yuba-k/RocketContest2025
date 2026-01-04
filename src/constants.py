@@ -4,6 +4,8 @@ import configloading
 
 confload = configloading.Config_reader()
 
+INTERRUPTED_TIME: Final = 18 * 60
+
 ST_PIN: Final = confload.reader("start", "st_pin", "intenger")
 
 VOICE_SYNTH_ADDR: Final = confload.reader("i2c", "voice_synth_addr", "intenger16")

@@ -5,6 +5,7 @@ import imgProcess
 import start
 import error
 import gyro_angle
+import constants
 
 import _thread
 import time
@@ -24,6 +25,7 @@ class state(Enum):
     STATE_MOVE = auto()
     STATE_JUDGE_GOAL = auto()
     STATE_GOAL = auto()
+    ERROR = auto()
 
 
 class flag():
@@ -33,7 +35,7 @@ class flag():
 def forced_stop(runtime:int):
     logging.info(f"強制終了命令をセット:{runtime}s")
     fintime = time.time() + runtime
-    while fintime - fintime > 0:
+    while fintime - time.time() > 0:
         time.sleep(10)
     _thread.interrupt_main()
 
@@ -61,25 +63,37 @@ def init():
     return cm, mv, gps
 
 def main():
-    NEXT_STATE = state.STATE_INIT
-    cm, mv, gps = init()
-
     current_position = {"lat":0.0, "lon":0.0}
     past_position = {"lat":0.0, "lon":0.0}
     noimgcnt = 0
     imgcnt = 0
 
-    NEXT_STATE = state.STATE_WAIT_DEPLOYMENT
-    start.awaiting()
+    MISSION_START = None
 
-
-    # 強制終了命令を待機
-    _thread.start_new_thread(forced_stop, (18*60))
-
-    NEXT_STATE = state.STATE_WAIT_GPS_FIX
-
+    NEXT_STATE = state.STATE_INIT
     while True:
-        if NEXT_STATE == state.STATE_WAIT_GPS_FIX:
+        if MISSION_START is not None:
+            if time.monotonic() - MISSION_START > constants.INTERRUPTED_TIME:
+                logging.info(f"{constants.INTERRUPTED_TIME}秒経過：強制ゴール判定")
+                NEXT_STATE = state.STATE_GOAL
+        else:
+            pass
+        if NEXT_STATE == state.STATE_INIT:
+            try:
+                cm, mv, gps = init()
+            except error.ERROR_GPS_CANNOT_CONNECTION:
+                NEXT_STATE = state.ERROR
+                continue
+            except error.ERROR_MOTOR_INIT:
+                NEXT_STATE = state.ERROR
+                continue
+            NEXT_STATE = state.STATE_WAIT_DEPLOYMENT
+        elif NEXT_STATE == state.STATE_WAIT_DEPLOYMENT:
+            start.awaiting()
+            # ミッション開始時間を記録
+            MISSION_START = time.monotonic()
+            NEXT_STATE = state.STATE_WAIT_GPS_FIX
+        elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
             lat, lon, satellites, utc_time, dop = gps.get_gps_data()
             logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
             current_position = {"lat":lat, "lon":lon}
@@ -98,7 +112,10 @@ def main():
             current_position = {"lat":lat, "lon":lon}
             calculate_result = gpsnew.calculate_target_distance_angle(current_position, past_position)
             if calculate_result["dir"] == "Immediate":
-                NEXT_STATE = state.STATE_GET_PHOTO
+                if flag.camera_available:
+                    NEXT_STATE = state.STATE_GET_PHOTO
+                else:
+                    NEXT_STATE = state.STATE_GOAL
             elif flag.gyro_available:
                 NEXT_STATE = state.STATE_MOVE_PID
             else:
@@ -133,12 +150,14 @@ def main():
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4*45/180)
             elif dir == "search":
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4*60/180)
+        elif NEXT_STATE == state.ERROR:
+            logging.critical("強制停止/異常によりプログラムを終了します")
+            NEXT_STATE = state.STATE_GOAL
         elif NEXT_STATE == state.STATE_GOAL:
+            cm.disconnect()
+            mv.cleanup()
+            gps.disconnect()
             break
-    cm.disconnect
-    mv.cleanup
-    gps.disconnect
-            
 
 
 if __name__ == "__main__":
