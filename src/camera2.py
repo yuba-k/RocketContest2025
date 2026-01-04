@@ -39,8 +39,8 @@ class Camera:
             )
             self.picam.start()
         except Exception as e:
-            logger.critical("カメラの初期化に失敗しました")
-            raise error.ERROR_CAMERA_INIT(f"カメラの初期化に失敗しました\n{e}")
+            logger.critical("カメラ初期化失敗")
+            raise error.ERROR_CAMERA_INIT(f"カメラの初期化に失敗しました") from e
 
     def cap(self, cnt):
         try:
