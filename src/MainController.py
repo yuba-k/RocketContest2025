@@ -1,16 +1,17 @@
-import camera2
-import gpsnew
-import motor
-import imgProcess
-import start
-import error
-import gyro_angle
-import constants
-
 import _thread
+import logging
 import time
 from enum import Enum, auto
-import logging
+
+import camera2
+import constants
+import error
+import gpsnew
+import gyro_angle
+import imgProcess
+import motor
+import start
+
 
 class state(Enum):
     STATE_INIT = auto()
@@ -28,16 +29,18 @@ class state(Enum):
     ERROR = auto()
 
 
-class flag():
+class flag:
     gyro_available = True
     camera_available = True
 
-def forced_stop(runtime:int):
+
+def forced_stop(runtime: int):
     logging.info(f"強制終了命令をセット:{runtime}s")
     fintime = time.time() + runtime
     while fintime - time.time() > 0:
         time.sleep(10)
     _thread.interrupt_main()
+
 
 def init():
     start.init()
@@ -48,7 +51,7 @@ def init():
         logging.warning(f"縮退動作に移行します\n{e}")
     try:
         gyrosensor = gyro_angle.GYRO()
-    except error.ERRROR_GYRO_INIT:
+    except error.ERRROR_GYRO_INIT as e:
         flag.gyro_available = False
         logging.warning(f"縮退動作に移行します\n{e}")
     try:
@@ -62,9 +65,10 @@ def init():
         raise error.ERROR_GPS_CANNOT_CONNECTION("GPSセンサへの接続に失敗しました")
     return cm, mv, gps
 
+
 def main():
-    current_position = {"lat":0.0, "lon":0.0}
-    past_position = {"lat":0.0, "lon":0.0}
+    current_position = {"lat": 0.0, "lon": 0.0}
+    past_position = {"lat": 0.0, "lon": 0.0}
     noimgcnt = 0
     imgcnt = 0
 
@@ -96,21 +100,23 @@ def main():
         elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
             lat, lon, satellites, utc_time, dop = gps.get_gps_data()
             logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
-            current_position = {"lat":lat, "lon":lon}
+            current_position = {"lat": lat, "lon": lon}
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=10)
             NEXT_STATE = state.STATE_GET_GPS_DATA
         elif NEXT_STATE == state.STATE_GET_GPS_DATA:
             past_position = current_position.copy()
             while True:
                 lat, lon, satellites, utc_time, dop = gps.get_gps_data()
-                if gpsnew.is_correct(lat,lon, past_position):
+                if gpsnew.is_correct(lat, lon, past_position):
                     break
                 else:
                     logging.error(f"上限値あるいは下限値を超過しています:{lat},{lon}")
                     time.sleep(1)
             logging.info(f"現在位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
-            current_position = {"lat":lat, "lon":lon}
-            calculate_result = gpsnew.calculate_target_distance_angle(current_position, past_position)
+            current_position = {"lat": lat, "lon": lon}
+            calculate_result = gpsnew.calculate_target_distance_angle(
+                current_position, past_position
+            )
             if calculate_result["dir"] == "Immediate":
                 if flag.camera_available:
                     NEXT_STATE = state.STATE_GET_PHOTO
@@ -121,10 +127,16 @@ def main():
             else:
                 NEXT_STATE = state.STATE_MOVE_DIRECTION
         elif NEXT_STATE == state.STATE_MOVE_PID:
-            mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.ANGLE, target_angle = calculate_result["deg"])
+            mv.adjust_duty_cycle(
+                motor.ADJUST_DUTY_MODE.ANGLE, target_angle=calculate_result["deg"]
+            )
             NEXT_STATE = state.STATE_GET_GPS_DATA
         elif NEXT_STATE == state.STATE_MOVE_DIRECTION:
-            mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, calculate_result["dir"], sec = 4*abs(calculate_result["deg"])/180)
+            mv.adjust_duty_cycle(
+                motor.ADJUST_DUTY_MODE.DIRECTION,
+                calculate_result["dir"],
+                sec=4 * abs(calculate_result["deg"]) / 180,
+            )
             NEXT_STATE = state.STATE_GET_GPS_DATA
         elif NEXT_STATE == state.STATE_GET_PHOTO:
             img = cm.cap(imgcnt)
@@ -145,11 +157,15 @@ def main():
                 NEXT_STATE = state.STATE_MOVE
         elif NEXT_STATE == state.STATE_MOVE:
             if dir == "forward":
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 80)
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=80)
             elif dir == "right" or dir == "left":
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4*45/180)
+                mv.adjust_duty_cycle(
+                    motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=4 * 45 / 180
+                )
             elif dir == "search":
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4*60/180)
+                mv.adjust_duty_cycle(
+                    motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=4 * 60 / 180
+                )
         elif NEXT_STATE == state.ERROR:
             logging.critical("強制停止/異常によりプログラムを終了します")
             NEXT_STATE = state.STATE_GOAL
