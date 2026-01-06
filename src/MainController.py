@@ -73,12 +73,14 @@ def main():
     imgcnt = 0
 
     MISSION_START = None
+    GOAL_REASON = ""
 
     NEXT_STATE = state.STATE_INIT
     while True:
         if MISSION_START is not None:
             if time.monotonic() - MISSION_START > constants.INTERRUPTED_TIME:
                 logging.info(f"{constants.INTERRUPTED_TIME}秒経過：強制ゴール判定")
+                GOAL_REASON = "TIMEOUT"
                 NEXT_STATE = state.STATE_GOAL
         else:
             pass
@@ -122,6 +124,7 @@ def main():
                     NEXT_STATE = state.STATE_GET_PHOTO
                 else:
                     NEXT_STATE = state.STATE_GOAL
+                    GOAL_REASON = "CameraDisavailable/EarlyTermination"
             elif flag.gyro_available:
                 NEXT_STATE = state.STATE_MOVE_PID
             else:
@@ -146,6 +149,7 @@ def main():
             cm.save(afimg, f"../img/result/{imgcnt}afimg.jpg")
             if dir == "goal":
                 NEXT_STATE = state.STATE_GOAL
+                GOAL_REASON = "SuccesufulAllPhase"
             elif dir == "search":
                 if noimgcnt > 10:
                     NEXT_STATE = state.STATE_WAIT_GPS_FIX
@@ -157,7 +161,7 @@ def main():
                 NEXT_STATE = state.STATE_MOVE
         elif NEXT_STATE == state.STATE_MOVE:
             if dir == "forward":
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=80)
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=8)
             elif dir == "right" or dir == "left":
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=4 * 45 / 180
@@ -170,6 +174,7 @@ def main():
             logging.critical("強制停止/異常によりプログラムを終了します")
             NEXT_STATE = state.STATE_GOAL
         elif NEXT_STATE == state.STATE_GOAL:
+            logging.info(f"ゴール判定:{GOAL_REASON}")
             cm.disconnect()
             mv.cleanup()
             gps.disconnect()
