@@ -16,12 +16,12 @@ class GYRO:
         self.sample_rate = sample_rate
         self.running = True
 
-        self._calibrate()
+        self.recalibrate()
 
         self.thread = threading.Thread(target=self._update_loop, daemon=True)
         self.thread.start()
 
-    def _calibrate(self, samples = 200):
+    def recalibrate(self, samples = 200):
         total = 0
         for _ in range(samples):
             total += self.sensor.gyro[2]
@@ -49,6 +49,7 @@ class GYRO:
     
     def reset(self):
         self.gyro_z = 0.0
+        self.recalibrate()
 
     def stop(self):
         self.running = False

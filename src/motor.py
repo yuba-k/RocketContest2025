@@ -93,11 +93,11 @@ class Motor:
             self.changeFlag = True
         elif mode == ADJUST_DUTY_MODE.ANGLE:
             count = 0
-            current = time.time()
+            current = time.monotonic()
             self.gyroangle.reset()
             self.pid.reset(setpoint=target_angle)
             logger.info(f"PID control is performed to achieve {target_angle}.")
-            while time.time() - current < sec:
+            while time.monotonic() - current < sec:
                 gyrodata = self.gyroangle.get_angle()
                 pidout = self.pid.calc(gyrodata)
                 self.right_duty = self.baseduty - pidout
