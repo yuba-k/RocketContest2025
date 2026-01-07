@@ -75,7 +75,7 @@ class Motor:
 
     def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None):
         if mode == ADJUST_DUTY_MODE.DIRECTION:
-            with sec._lock:
+            with self._lock:
                 if sec is not None:
                     self._stop_time = time.time() + sec
             if direction == "forward":
