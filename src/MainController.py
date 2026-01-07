@@ -69,6 +69,7 @@ def init():
 def main():
     current_position = {"lat": 0.0, "lon": 0.0}
     past_position = {"lat": 0.0, "lon": 0.0}
+    goal_position = {"lat":constants.GOAL_LAT,"lon":constants.GOAL_LON}
     noimgcnt = 0
     imgcnt = 0
 
@@ -117,7 +118,7 @@ def main():
             logging.info(f"現在位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
             current_position = {"lat": lat, "lon": lon}
             calculate_result = gpsnew.calculate_target_distance_angle(
-                current_position, past_position
+                current_position, past_position, goal_position, 10
             )
             if calculate_result["dir"] == "Immediate":
                 if flag.camera_available:
@@ -170,6 +171,7 @@ def main():
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=4 * 60 / 180
                 )
+            NEXT_STATE = state.STATE_TARGET_DETECTION
         elif NEXT_STATE == state.ERROR:
             logging.critical("強制停止/異常によりプログラムを終了します")
             NEXT_STATE = state.STATE_GOAL

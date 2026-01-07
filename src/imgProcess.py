@@ -32,8 +32,8 @@ def binaryNoiseCutter(img):
 
 
 def opening(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
+    # gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
     kernel = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], np.uint8)
     img = cv2.erode(img, kernel, iterations=3)
     img = cv2.dilate(img, kernel, iterations=3)
@@ -52,7 +52,7 @@ def red_mask(img):
     mask2 = cv2.inRange(hsv, (170, 100, 100), (180, 255, 255))
     mask = cv2.bitwise_or(mask1, mask2)
     masked = cv2.bitwise_and(img, img, mask=mask)
-    return opening(masked)
+    return opening(mask)
 
 
 def split_by_size(img, size):
