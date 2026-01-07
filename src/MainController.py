@@ -99,6 +99,8 @@ def main():
             start.awaiting()
             # ミッション開始時間を記録
             MISSION_START = time.monotonic()
+            # キャリア脱出
+            mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=10)
             NEXT_STATE = state.STATE_WAIT_GPS_FIX
         elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
             lat, lon, satellites, utc_time, dop = gps.get_gps_data()
