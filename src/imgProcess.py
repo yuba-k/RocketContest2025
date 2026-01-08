@@ -35,8 +35,9 @@ def opening(img):
     # gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     # _, img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
     kernel = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], np.uint8)
-    img = cv2.erode(img, kernel, iterations=3)
-    img = cv2.dilate(img, kernel, iterations=3)
+    img = cv2.morphologyEx(img, cv2.MORPH_OPEN,kernel, iterations = 3)
+    # img = cv2.erode(img, kernel, iterations=3)
+    # img = cv2.dilate(img, kernel, iterations=3)
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
     contours = [c for c in contours if cv2.contourArea(c) > 1000]
     if not contours:
@@ -46,12 +47,11 @@ def opening(img):
     return out
 
 
-def red_mask(img):
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+def red_mask(hsv):
     mask1 = cv2.inRange(hsv, (0, 100, 100), (10, 255, 255))
     mask2 = cv2.inRange(hsv, (170, 100, 100), (180, 255, 255))
     mask = cv2.bitwise_or(mask1, mask2)
-    masked = cv2.bitwise_and(img, img, mask=mask)
+#    masked = cv2.bitwise_and(img, img, mask=mask)
     return opening(mask)
 
 
@@ -123,8 +123,9 @@ def merge_chunks(chunks, original_shape, size):
 
 def imgprocess(img):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     chunk = (img.shape[0], img.shape[1] // 4)
-    afImg = split_by_size(img, chunk)
+    afImg = split_by_size(hsv, chunk)
     rsImg = list(_executor.map(red_mask, afImg))
     merge = merge_chunks(rsImg, img.shape, chunk)
     merge = binaryNoiseCutter(merge)
@@ -142,25 +143,13 @@ def detect_objects_long_range(img):
 
 
 def main():
-    path = ""
+    path = "../imgsets/20251206/1280x720/jpg"
     files = os.listdir(path)
     for fname in files:
         try:
-            print(fname)
-            img = cv2.imread(os.path.join(path,fname))
-            chunk = (img.shape[0], img.shape[1] // 4)
-            afImg = split_by_size(img, chunk)
-            st = time.time()
-            rsImg = list(_executor.map(red_mask, afImg))
-            print(f"終了: {time.time() - st:.3f}秒")
-
-            os.makedirs("img", exist_ok=True)
-
-            merge = merge_chunks(rsImg, img.shape, chunk)
-            merge = binaryNoiseCutter(merge)
-            _, img = get_target_points2(merge, img)
-            cv2.imwrite(f"../img/result/result-{fname}", img)
-
+            read_img = cv2.imread(os.path.join(path, fname))
+            _, img = imgprocess(cv2.cvtColor(read_img, cv2.COLOR_BGR2RGB))
+            cv2.imwrite(os.path.join("../img/result", fname), img)
         except KeyboardInterrupt:
             print("KeyboardInterrupt")
 
