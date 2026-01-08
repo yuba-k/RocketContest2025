@@ -32,6 +32,7 @@ class state(Enum):
 class flag:
     gyro_available = True
     camera_available = True
+    backlight_avoidance = True
 
 
 def forced_stop(runtime: int):
@@ -70,6 +71,7 @@ def main():
     current_position = {"lat": 0.0, "lon": 0.0}
     past_position = {"lat": 0.0, "lon": 0.0}
     goal_position = {"lat":constants.GOAL_LAT,"lon":constants.GOAL_LON}
+    relay_point = {"lat":constants.GOAL_LAT, "lon":constants.GOAL_LON}
     noimgcnt = 0
     imgcnt = 0
 
@@ -141,7 +143,7 @@ def main():
             mv.adjust_duty_cycle(
                 motor.ADJUST_DUTY_MODE.DIRECTION,
                 calculate_result["dir"],
-                sec=4 * abs(calculate_result["deg"]) / 180,
+                sec = 4 * abs(calculate_result["deg"]) / 180,
             )
             NEXT_STATE = state.STATE_GET_GPS_DATA
         elif NEXT_STATE == state.STATE_GET_PHOTO:
@@ -164,14 +166,14 @@ def main():
                 NEXT_STATE = state.STATE_MOVE
         elif NEXT_STATE == state.STATE_MOVE:
             if dir == "forward":
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=8)
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 8)
             elif dir == "right" or dir == "left":
                 mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=4 * 45 / 180
+                    motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4 * 45 / 180
                 )
             elif dir == "search":
                 mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec=4 * 60 / 180
+                    motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4 * 60 / 180
                 )
             NEXT_STATE = state.STATE_TARGET_DETECTION
         elif NEXT_STATE == state.ERROR:
