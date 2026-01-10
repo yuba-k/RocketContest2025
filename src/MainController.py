@@ -44,6 +44,7 @@ def forced_stop(runtime: int):
 
 
 def init():
+    logging.config.fileConfig("../config/logconfig.ini")
     start.init()
     try:
         cm = camera2.Camera()
