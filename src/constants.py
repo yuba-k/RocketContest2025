@@ -12,7 +12,7 @@ VOICE_SYNTH_ADDR: Final = confload.reader("i2c", "voice_synth_addr", "intenger16
 IMU_ADDR: Final = confload.reader("i2c", "imu_addr", "intenger16")
 
 HEIGHT: Final = confload.reader("camera", "height", "intenger")
-WIDTH: Final = confload.reader("camera", "weight", "intenger")
+WIDTH: Final = confload.reader("camera", "width", "intenger")
 
 DUTY: Final = confload.reader("motor", "duty", "intenger")
 BASE_DUTY: Final = confload.reader("motor", "base_duty", "intenger")
