@@ -21,5 +21,9 @@ RIGHT_PHASE: Final = confload.reader("motor", "right_phase", "intenger")
 LEFT_PWM: Final = confload.reader("motor", "left_pwm", "intenger")
 LEFT_PHASE: Final = confload.reader("motor", "left_phase", "intenger")
 
+KP: Final = confload.reader("pid", "kp", "float")
+KI: Final = confload.reader("pid", "ki", "float")
+KD: Final = confload.reader("pid", "kd", "float")
+
 GOAL_LAT: Final = confload.reader("goal", "lat", "float")
 GOAL_LON: Final = confload.reader("goal", "lon", "float")
