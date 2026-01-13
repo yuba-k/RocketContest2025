@@ -27,3 +27,5 @@ KD: Final = confload.reader("pid", "kd", "float")
 
 GOAL_LAT: Final = confload.reader("goal", "lat", "float")
 GOAL_LON: Final = confload.reader("goal", "lon", "float")
+RELAY_LAT: Final = GOAL_LAT + 0
+RELAY_LAT: Final = GOAL_LON + 0

@@ -72,7 +72,7 @@ def main():
     current_position = {"lat": 0.0, "lon": 0.0}
     past_position = {"lat": 0.0, "lon": 0.0}
     goal_position = {"lat":constants.GOAL_LAT,"lon":constants.GOAL_LON}
-    relay_point = {"lat":constants.GOAL_LAT, "lon":constants.GOAL_LON}
+    relay_point = {"lat":constants.RELAY_LAT, "lon":constants.RELAY_LON}
     noimgcnt = 0
     imgcnt = 0
 
