@@ -3,6 +3,7 @@ import logging
 import logging.config
 import time
 from enum import Enum, auto
+import threading
 
 import camera2
 import constants
@@ -105,10 +106,10 @@ def main():
             # ミッション開始時間を記録
             MISSION_START = time.monotonic()
             # キャリア脱出
+            threading.Thread(target=mv.move, daemon=True).start()
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=10)
             NEXT_STATE = state.STATE_WAIT_GPS_FIX
         elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
-            mv.move()
             while True:
                 lat, lon, satellites, utc_time, dop = gps.get_gps_data()
                 if lat is not None and lon is not None:

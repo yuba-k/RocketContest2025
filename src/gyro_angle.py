@@ -27,7 +27,7 @@ class GYRO:
             self.thread.start()
         except Exception as e:
             logger.critical("6軸初期化エラー")
-            raise error.ERRROR_GYRO_INIT from e
+            raise error.ERROR_GYRO_INIT from e
 
 
     def recalibrate(self, samples = 200):
