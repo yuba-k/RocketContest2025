@@ -58,6 +58,7 @@ def init():
         gyrosensor = gyro_angle.GYRO()
     except error.ERROR_GYRO_INIT as e:
         flag.gyro_available = False
+        gyrosensor = None
         logging.warning(f"縮退動作に移行します\n{e}")
     try:
         mv = motor.Motor(gyrosensor)
