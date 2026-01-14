@@ -1,5 +1,6 @@
 import _thread
 import logging
+import logging.config
 import time
 from enum import Enum, auto
 
@@ -115,7 +116,7 @@ def main():
             past_position = current_position.copy()
             while True:
                 lat, lon, satellites, utc_time, dop = gps.get_gps_data()
-                if gpsnew.is_correct(lat, lon, past_position):
+                if lat is not None and lon is not None and gpsnew.is_correct(lat, lon, past_position):
                     break
                 else:
                     logging.error(f"上限値あるいは下限値を超過しています:{lat},{lon}")
