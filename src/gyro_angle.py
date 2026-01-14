@@ -2,24 +2,33 @@ import time
 import math
 import threading
 
+import logging
+
 import board
+import error
 from adafruit_lsm6ds.lsm6ds33 import LSM6DS33
 
+logger = logging.getLogger()
 
 class GYRO:
     def __init__(self, sample_rate=0.01):
-        i2c = board.I2C()
-        self.sensor = LSM6DS33(i2c)
+        try:
+            i2c = board.I2C()
+            self.sensor = LSM6DS33(i2c)
 
-        self.gyro_z = 0.0
-        self.offset_z = 0.0
-        self.sample_rate = sample_rate
-        self.running = True
+            self.gyro_z = 0.0
+            self.offset_z = 0.0
+            self.sample_rate = sample_rate
+            self.running = True
 
-        self.recalibrate()
+            self.recalibrate()
 
-        self.thread = threading.Thread(target=self._update_loop, daemon=True)
-        self.thread.start()
+            self.thread = threading.Thread(target=self._update_loop, daemon=True)
+            self.thread.start()
+        except Exception as e:
+            logger.critical("6軸初期化エラー")
+            raise error.ERRROR_GYRO_INIT from e
+
 
     def recalibrate(self, samples = 200):
         total = 0
