@@ -46,6 +46,7 @@ def forced_stop(runtime: int):
 
 def init():
     logging.config.fileConfig("../config/logconfig.ini")
+    logging.info("初期化開始")
     start.init()
     try:
         cm = camera2.Camera()
@@ -107,6 +108,7 @@ def main():
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=10)
             NEXT_STATE = state.STATE_WAIT_GPS_FIX
         elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
+            mv.move()
             while True:
                 lat, lon, satellites, utc_time, dop = gps.get_gps_data()
                 if lat is not None and lon is not None:
