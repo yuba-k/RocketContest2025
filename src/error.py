@@ -1,4 +1,4 @@
-class ERRROR_GYRO_INIT(Exception):
+class ERROR_GYRO_INIT(Exception):
     pass
 
 class ERROR_MOTOR_INIT(Exception):

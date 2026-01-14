@@ -55,12 +55,12 @@ def init():
         logging.warning(f"縮退動作に移行します\n{e}")
     try:
         gyrosensor = gyro_angle.GYRO()
-    except error.ERRROR_GYRO_INIT as e:
+    except error.ERROR_GYRO_INIT as e:
         flag.gyro_available = False
         logging.warning(f"縮退動作に移行します\n{e}")
     try:
         mv = motor.Motor(gyrosensor)
-    except error.ERRROR_MOTOR_INIT:
+    except error.ERROR_MOTOR_INIT:
         raise error.ERROR_MOTOR_INIT("モータの初期化に失敗しました")
     try:
         gps = gpsnew.GPSModule()
