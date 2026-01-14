@@ -107,7 +107,12 @@ def main():
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=10)
             NEXT_STATE = state.STATE_WAIT_GPS_FIX
         elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
-            lat, lon, satellites, utc_time, dop = gps.get_gps_data()
+            while True:
+                lat, lon, satellites, utc_time, dop = gps.get_gps_data()
+                if lat is not None and lon is not None:
+                    break
+                else:
+                    logging.error("位置情報未受信")
             logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
             current_position = {"lat": lat, "lon": lon}
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=10)
