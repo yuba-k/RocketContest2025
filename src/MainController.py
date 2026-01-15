@@ -108,6 +108,7 @@ def main():
             MISSION_START = time.monotonic()
             # キャリア脱出
             threading.Thread(target=mv.move, daemon=True).start()
+            logging.info("キャリア脱出")
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=10)
             NEXT_STATE = state.STATE_WAIT_GPS_FIX
         elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
