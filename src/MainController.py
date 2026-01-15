@@ -121,6 +121,7 @@ def main():
             logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
             current_position = {"lat": lat, "lon": lon}
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=10)
+            time.sleep(10)
             NEXT_STATE = state.STATE_GET_GPS_DATA
         elif NEXT_STATE == state.STATE_GET_GPS_DATA:
             past_position = current_position.copy()
@@ -148,8 +149,9 @@ def main():
                 NEXT_STATE = state.STATE_MOVE_DIRECTION
         elif NEXT_STATE == state.STATE_MOVE_PID:
             mv.adjust_duty_cycle(
-                motor.ADJUST_DUTY_MODE.ANGLE, target_angle=calculate_result["deg"]
+                motor.ADJUST_DUTY_MODE.ANGLE, target_angle=calculate_result["deg"], sec=8
             )
+            time.sleep(8)
             NEXT_STATE = state.STATE_GET_GPS_DATA
         elif NEXT_STATE == state.STATE_MOVE_DIRECTION:
             mv.adjust_duty_cycle(
@@ -157,6 +159,7 @@ def main():
                 calculate_result["dir"],
                 sec = 4 * abs(calculate_result["deg"]) / 180,
             )
+            time.sleep(4)
             NEXT_STATE = state.STATE_GET_GPS_DATA
         elif NEXT_STATE == state.STATE_GET_PHOTO:
             img = cm.cap(imgcnt)
