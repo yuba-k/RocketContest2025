@@ -111,7 +111,7 @@ def main():
                 threading.Thread(target=mv.move, daemon=True).start()
                 logging.info("キャリア脱出")
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
-                time.sleep(s)
+                time.sleep(s + 2)
                 NEXT_STATE = state.STATE_WAIT_GPS_FIX
             elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
                 while True:
@@ -123,7 +123,7 @@ def main():
                 logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
                 current_position = {"lat": lat, "lon": lon}
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
-                time.sleep(s)
+                time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_GET_GPS_DATA:
                 past_position = current_position.copy()
