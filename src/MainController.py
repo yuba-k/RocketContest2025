@@ -53,6 +53,7 @@ def init():
         cm = camera2.Camera()
     except error.ERROR_CAMERA_INIT as e:
         flag.camera_available = False
+        cm = None
         logging.warning(f"縮退動作に移行します\n{e}")
     try:
         gyrosensor = gyro_angle.GYRO()
@@ -203,7 +204,8 @@ def main():
                 gps.disconnect()
                 break
     except Exception:
-            cm.disconnect()
+            if cm is not None:
+                cm.disconnect()
             mv.cleanup()
             gps.disconnect()
             logging.critical("エラーによる強制終了")
