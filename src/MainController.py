@@ -46,7 +46,7 @@ def forced_stop(runtime: int):
 
 
 def init():
-    logging.config.fileConfig("../config/logconfig.ini")
+    logging.config.fileConfig("../config/logconfig.ini", disable_existing_loggers=False)
     logging.info("初期化開始")
     start.init()
     try:

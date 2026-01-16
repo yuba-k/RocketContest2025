@@ -8,7 +8,7 @@ import board
 import error
 from adafruit_lsm6ds.lsm6ds33 import LSM6DS33
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class GYRO:
     def __init__(self, sample_rate=0.01):
