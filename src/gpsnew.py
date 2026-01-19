@@ -197,7 +197,7 @@ if __name__ == "__main__":
                     )
                     with open("output.csv", mode="w", newline="", encoding="utf-8") as file:
                         writer = csv.writer(file)
-                        writer.writerow([lat,lon])
+                        writer.writerow([lat, lon, satellites, utc_time, dop])
                 # Example: log_to_file(lat, lon, satellites, time_utc, dop)
                 else:
                     print("Waiting")
