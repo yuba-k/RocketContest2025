@@ -184,27 +184,27 @@ if __name__ == "__main__":
     try:
         gps.connect()
         print("Fetching GPS data...")
-        with open("output.csv", mode="w", newline="", encoding="utf-8") as file:
-            writer = csv.writer(file)
-            while True:
-                try:
-                    lat, lon, satellites, utc_time, dop = gps.get_gps_data()
-                    if lat is not None and lon is not None:
-                        print(
-                            f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}"
-                        )
-                        # ロギングを追加する場合、以下に記述
-                        logger.info(
-                            f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}"
-                        )
-                        writer.writerows(lat,lon)
-                    # Example: log_to_file(lat, lon, satellites, time_utc, dop)
-                    else:
-                        print("Waiting")
-                except KeyboardInterrupt:
-                    break
-                except Exception as e:
-                    print(e)
+        while True:
+            try:
+                lat, lon, satellites, utc_time, dop = gps.get_gps_data()
+                if lat is not None and lon is not None:
+                    print(
+                        f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}"
+                    )
+                    # ロギングを追加する場合、以下に記述
+                    logger.info(
+                        f"Latitude: {lat:.6f}, Longitude: {lon:.6f}, Satellites: {satellites}, Time: {utc_time}, DOP: {dop}"
+                    )
+                    with open("output.csv", mode="w", newline="", encoding="utf-8") as file:
+                        writer = csv.writer(file)
+                        writer.writerows([lat,lon])
+                # Example: log_to_file(lat, lon, satellites, time_utc, dop)
+                else:
+                    print("Waiting")
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                print(e)
     except KeyboardInterrupt:
         print("Terminating program.")
     except Exception as e:
