@@ -26,6 +26,8 @@ class GPSModule:
         try:
             self.serial_connection = serial.Serial(self.port, self.baud_rate, timeout=1)
             logger.info("GPS module connected.")
+            self.send_pmtk("$PMTK313,1*2E") #SBAS有効化
+            self.send_pmtk("$PMTK869,1,1*35") #EASY有効化
         except Exception as e:
             logger.critical("Failed to connect to GPS module")
             raise error.ERROR_GPS_CANNOT_CONNECTION(f"Failed to connect to GPS module: {e}")
@@ -35,6 +37,11 @@ class GPSModule:
         if self.serial_connection:
             self.serial_connection.close()
             print("GPS module disconnected.")
+
+    def send_pmtk(self, cmd:str):
+        data = f"{cmd}\r\n"
+        self.serial_connection.write(data.encode("ascii"))
+        logging.info(f"PMTK Command excuted : {cmd}")
 
     def _parse_nmea_sentence(
         self, sentence: str
