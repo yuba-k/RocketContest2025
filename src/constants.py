@@ -29,3 +29,5 @@ GOAL_LAT: Final = confload.reader("goal", "lat", "float")
 GOAL_LON: Final = confload.reader("goal", "lon", "float")
 RELAY_LAT: Final = GOAL_LAT + 0
 RELAY_LON: Final = GOAL_LON + 0
+
+GPS_LOG_PATH: Final = confload.reader("path", "gps_log_path", "character")

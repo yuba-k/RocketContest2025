@@ -13,6 +13,7 @@ import gyro_angle
 import imgProcess
 import motor
 import start
+import write_csv
 
 
 class state(Enum):
@@ -122,6 +123,7 @@ def main():
                     else:
                         logging.error("位置情報未受信")
                 logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
+                write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
                 time.sleep(s + 2)
@@ -134,8 +136,10 @@ def main():
                         break
                     else:
                         logging.error(f"上限値あるいは下限値を超過しています:{lat},{lon}")
+                        write_csv.write([lat,lon,satellites,utc_time,dop,"0"])
                         time.sleep(1)
                 logging.info(f"現在位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
+                write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
                 calculate_result = gpsnew.calculate_target_distance_angle(
                     current_position, past_position, goal_position, 10
