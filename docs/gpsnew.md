@@ -1,6 +1,6 @@
 # gpsnew.py
 
-##　使用ライブラリ
+## 使用ライブラリ
 <br>-`logging`&nbsp;&nbsp;&nbsp;&nbsp;:pythonでのログ使用用ライブラリ。<br>
 
 -`math`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:複素数以外の数学処理を行える。複素数を扱いたい場合は`cmath`ライブラリを使用。詳しくは下記URLを参照。
@@ -62,7 +62,7 @@ pochi = Dog()
 `class`だけでは意味を為さないが、`pochi=Dog()`というインスタンス（値）を持たせることでデータの保持/変更/使用 が行える。
 
 #### 関数
-##### `def connect(self):`
+##### `connect(self):`
 GPSとの通信を行う関数
 ##### `disconnect`
 GPSとの通信を終了する関数
