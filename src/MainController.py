@@ -129,6 +129,7 @@ def main():
                 time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_GET_GPS_DATA:
+                print("STATE_GET_GPS_DATA")
                 past_position = current_position.copy()
                 while True:
                     lat, lon, satellites, utc_time, dop = gps.get_gps_data()
@@ -173,7 +174,7 @@ def main():
                 NEXT_STATE = state.STATE_TARGET_DETECTION
             elif NEXT_STATE == state.STATE_TARGET_DETECTION:
                 dir, afimg = imgProcess.imgprocess(img)
-                cm.save(afimg, f"../img/result/{imgcnt}afimg.jpg")
+                cm.save(afimg, f"../img/result/{imgcnt}afimg.jpg",camera2.COLOR_MODE.RGB)
                 if dir == "goal":
                     NEXT_STATE = state.STATE_GOAL
                     GOAL_REASON = "SuccesufulAllPhase"
@@ -207,12 +208,12 @@ def main():
                 mv.cleanup()
                 gps.disconnect()
                 break
-    except Exception:
+    except Exception as e:
             if cm is not None:
                 cm.disconnect()
             mv.cleanup()
             gps.disconnect()
-            logging.critical("エラーによる強制終了")
+            logging.critical(f"エラーによる強制終了:{e}")
 
 if __name__ == "__main__":
     main()
