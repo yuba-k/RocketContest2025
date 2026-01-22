@@ -167,8 +167,9 @@ def main():
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.DIRECTION,
                     "forward",
-                    sec = 5
+                    sec = (s := 5)
                 )
+                time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_MOVE_DIRECTION:
                 logging.info("STATE_MOVE_DIRECTION")
