@@ -97,6 +97,9 @@ class Motor:
             self.gyroangle.reset()
             self.pid.reset(setpoint=target_angle)
             logger.info(f"PID control is performed to achieve {target_angle}.")
+            with self._lock:
+                if sec is not None:
+                    self._stop_time = time.time() + sec
             while time.monotonic() - current < sec:
                 gyrodata = self.gyroangle.get_angle()
                 pidout = self.pid.calc(gyrodata)
