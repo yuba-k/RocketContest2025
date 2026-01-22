@@ -96,6 +96,7 @@ def main():
             else:
                 pass
             if NEXT_STATE == state.STATE_INIT:
+                logging.info("STATE_INIT")
                 try:
                     cm, mv, gps = init()
                 except error.ERROR_GPS_CANNOT_CONNECTION:
@@ -106,6 +107,7 @@ def main():
                     continue
                 NEXT_STATE = state.STATE_WAIT_DEPLOYMENT
             elif NEXT_STATE == state.STATE_WAIT_DEPLOYMENT:
+                logging.info("STATE_WAIT_DEPLOYMENT")
                 start.awaiting()
                 # ミッション開始時間を記録
                 MISSION_START = time.monotonic()
@@ -116,6 +118,7 @@ def main():
                 time.sleep(s + 2)
                 NEXT_STATE = state.STATE_WAIT_GPS_FIX
             elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
+                logging.info("STATE_WAIT_GPS_FIX")
                 while True:
                     lat, lon, satellites, utc_time, dop = gps.get_gps_data()
                     if lat is not None and lon is not None:
@@ -129,7 +132,7 @@ def main():
                 time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_GET_GPS_DATA:
-                print("STATE_GET_GPS_DATA")
+                logging.info("STATE_GET_GPS_DATA")
                 past_position = current_position.copy()
                 while True:
                     lat, lon, satellites, utc_time, dop = gps.get_gps_data()
@@ -156,12 +159,14 @@ def main():
                 else:
                     NEXT_STATE = state.STATE_MOVE_DIRECTION
             elif NEXT_STATE == state.STATE_MOVE_PID:
+                logging.info("STATE_MOVE_PID")
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.ANGLE, target_angle=calculate_result["deg"], sec=(s := 8)
                 )
                 time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_MOVE_DIRECTION:
+                logging.info("STATE_MOVE_DIRECTION")
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.DIRECTION,
                     calculate_result["dir"],
@@ -170,9 +175,11 @@ def main():
                 time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_GET_PHOTO:
+                logging.info("STATE_GET_PHOTO")
                 img = cm.cap(imgcnt)
                 NEXT_STATE = state.STATE_TARGET_DETECTION
             elif NEXT_STATE == state.STATE_TARGET_DETECTION:
+                logging.info("STATE_TARGET_DETECTION")
                 dir, afimg = imgProcess.imgprocess(img)
                 cm.save(afimg, f"../img/result/{imgcnt}afimg.jpg",camera2.COLOR_MODE.RGB)
                 if dir == "goal":
@@ -188,6 +195,7 @@ def main():
                 else:
                     NEXT_STATE = state.STATE_MOVE
             elif NEXT_STATE == state.STATE_MOVE:
+                logging.info("STATE_MOVE")
                 if dir == "forward":
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 8)
                 elif dir == "right" or dir == "left":
@@ -200,9 +208,11 @@ def main():
                     )
                 NEXT_STATE = state.STATE_TARGET_DETECTION
             elif NEXT_STATE == state.ERROR:
+                logging.info("ERROR")
                 logging.critical("強制停止/異常によりプログラムを終了します")
                 NEXT_STATE = state.STATE_GOAL
             elif NEXT_STATE == state.STATE_GOAL:
+                logging.info("STATE_GOAL")
                 logging.info(f"ゴール判定:{GOAL_REASON}")
                 cm.disconnect()
                 mv.cleanup()
