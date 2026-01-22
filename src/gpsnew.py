@@ -175,8 +175,8 @@ def is_correct(lat, lon, previous_coordinate):
     if (abs(previous_coordinate["lat"] - lat) >= 0.000003) and (
         abs(previous_coordinate["lon"] - lon) >= 0.000003
     ):
-        if (abs(previous_coordinate["lat"] - lat) <= 0.000050) and (
-            abs(previous_coordinate["lon"] - lon) <= 0.000050
+        if (abs(previous_coordinate["lat"] - lat) <= 0.000500) and (
+            abs(previous_coordinate["lon"] - lon) <= 0.000500
         ):
             return True
         else:
