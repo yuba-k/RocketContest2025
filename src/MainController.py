@@ -164,6 +164,11 @@ def main():
                     motor.ADJUST_DUTY_MODE.ANGLE, target_angle=calculate_result["deg"], sec=(s := 8)
                 )
                 time.sleep(s + 2)
+                mv.adjust_duty_cycle(
+                    motor.ADJUST_DUTY_MODE.DIRECTION,
+                    "forward",
+                    sec = 5
+                )
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_MOVE_DIRECTION:
                 logging.info("STATE_MOVE_DIRECTION")
