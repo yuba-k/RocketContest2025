@@ -1,6 +1,11 @@
 import time
 
 
+def wrap_deg(x: float) -> float:
+    # [-180, 180) に正規化
+    return (x + 180.0) % 360.0 - 180.0
+
+
 class PID:
     def __init__(self, kp, ki, kd, setpoint, limits=(-15, 15), sample_time=0.05):
         self.kp = kp
@@ -27,7 +32,7 @@ class PID:
 
         if dt < self.sample_time:
             return self._last_output
-        error = self.setpoint - measurement
+        error = wrap_deg(self.setpoint - measurement)
         self._integral += error * dt
         derivative = (error - self._last_error) / dt
         output = (self.kp * error) + (self.ki * self._integral) + (self.kd * derivative)
