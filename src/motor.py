@@ -114,6 +114,8 @@ class Motor:
                     count += 1
                     if count >5:
                         break
+                else:
+                    count = 0
                 time.sleep(0.05)
             self.right_duty = self.left_duty = 0
             self.changeFlag = True
