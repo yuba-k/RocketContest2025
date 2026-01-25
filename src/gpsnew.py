@@ -152,7 +152,7 @@ def calculate_target_distance_angle(
     degree = (degree - 360) if (180 < degree) else degree
 
     distance = math.sqrt(
-        coordinate_diff_goal["lat"] ** 2 + coordinate_diff_goal["lon"] ** 2
+        (coordinate_diff_goal["lat"] * 111.111) ** 2 + (coordinate_diff_goal["lon"] * 111.111 * math.cos(math.radians(current_coordinate["lon"])))** 2
     ) * math.pow(
         10, 5
     )  # m単位で距離を表現
