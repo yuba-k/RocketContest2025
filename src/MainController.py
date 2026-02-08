@@ -82,6 +82,7 @@ def main():
         relay_point = {"lat":constants.RELAY_LAT, "lon":constants.RELAY_LON}
         noimgcnt = 0
         imgcnt = 0
+        cm = cv = gps = None
 
         MISSION_START = None
         GOAL_REASON = ""
@@ -189,6 +190,7 @@ def main():
             elif NEXT_STATE == state.STATE_GET_PHOTO:
                 logging.info("STATE_GET_PHOTO")
                 img = cm.cap(imgcnt)
+                imgcnt += 1
                 NEXT_STATE = state.STATE_TARGET_DETECTION
             elif NEXT_STATE == state.STATE_TARGET_DETECTION:
                 logging.info("STATE_TARGET_DETECTION")
