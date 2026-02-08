@@ -102,10 +102,12 @@ class Motor:
                     self._stop_time = time.time() + sec
             while time.monotonic() - current < sec:
                 gyrodata = self.gyroangle.get_angle()
-                pidout = self.pid.calc(gyrodata)
-                self.right_duty = self.baseduty - pidout
-                self.left_duty = self.baseduty + pidout
-                self.changeFlag = True
+                gyrodata = self.gyroangle.wrap_deg(gyrodata)
+                pidout = self.pid.calc(gyrodata)#正規化-180<θ<180
+                with self._lock:
+                    self.right_duty = self.baseduty - pidout
+                    self.left_duty = self.baseduty + pidout
+                    self.changeFlag = True
                 logger.debug(
                     f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty},{self.left_duty}"
                 )
@@ -116,7 +118,7 @@ class Motor:
                         break
                 else:
                     count = 0
-                time.sleep(0.05)
+                time.sleep(0.02)
             self.right_duty = self.left_duty = 0
             self.changeFlag = True
 

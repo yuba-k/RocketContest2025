@@ -29,6 +29,9 @@ class GYRO:
             logger.critical("6軸初期化エラー")
             raise error.ERROR_GYRO_INIT from e
 
+    def wrap_deg(self, x: float) -> float:
+        # [-180, 180) に正規化
+        return (x + 180.0) % 360.0 - 180.0
 
     def recalibrate(self, samples = 200):
         total = 0
