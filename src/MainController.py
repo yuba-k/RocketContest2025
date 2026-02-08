@@ -169,7 +169,7 @@ def main():
                 calculate_result = gpsnew.calculate_target_distance_angle(
                     current_position, past_position, goal_position, 10
                 )
-                logging.info(f"deg:{calculate_result["deg"]}\tdis:{calculate_result["distance"]}")
+                logging.info(f"deg:{calculate_result['deg']}\tdis:{calculate_result['distance']}")
                 if calculate_result["dir"] == "Immediate":
                     if flag.camera_available:
                         NEXT_STATE = state.STATE_GET_PHOTO
