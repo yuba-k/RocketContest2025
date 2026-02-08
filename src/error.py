@@ -9,3 +9,6 @@ class ERROR_CAMERA_INIT(Exception):
 
 class ERROR_GPS_CANNOT_CONNECTION(Exception):
     pass
+
+class ERROR_FM_INIT(Exception):
+    pass

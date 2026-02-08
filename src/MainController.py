@@ -14,6 +14,7 @@ import imgProcess
 import motor
 import start
 import write_csv
+import WeakFMEmitter
 
 
 class state(Enum):
@@ -36,6 +37,7 @@ class flag:
     gyro_available = True
     camera_available = True
     backlight_avoidance = True
+    fm_available = True
 
 
 def forced_stop(runtime: int):
@@ -71,8 +73,18 @@ def init():
         gps.connect()
     except error.ERROR_GPS_CANNOT_CONNECTION:
         raise error.ERROR_GPS_CANNOT_CONNECTION("GPSセンサへの接続に失敗しました")
-    return cm, mv, gps
+    try:
+        fm = WeakFMEmitter.FMemitter()
+    except Exception:
+        flag.fm_available = False
+        fm = None
+    return cm, mv, gps, fm
 
+def send_fm(fm,msg:str) -> None:
+    if flag.fm_available:
+        fm.transmitFMMessage(msg)
+    else:
+        pass
 
 def main():
     try:
@@ -82,7 +94,7 @@ def main():
         relay_point = {"lat":constants.RELAY_LAT, "lon":constants.RELAY_LON}
         noimgcnt = 0
         imgcnt = 0
-        cm = cv = gps = None
+        cm = cv = gps = fm = None
 
         MISSION_START = None
         GOAL_REASON = ""
@@ -99,7 +111,7 @@ def main():
             if NEXT_STATE == state.STATE_INIT:
                 logging.info("STATE_INIT")
                 try:
-                    cm, mv, gps = init()
+                    cm, mv, gps, fm = init()
                 except error.ERROR_GPS_CANNOT_CONNECTION:
                     NEXT_STATE = state.ERROR
                     continue
@@ -115,6 +127,7 @@ def main():
                 # キャリア脱出
                 threading.Thread(target=mv.move, daemon=True).start()
                 logging.info("キャリア脱出")
+                send_fm("zensin,simasu")
                 if flag.gyro_available:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
@@ -129,6 +142,7 @@ def main():
                         break
                     else:
                         logging.error("位置情報未受信")
+                    send_fm("iti,syutokutyuu")
                 logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
                 write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
