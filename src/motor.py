@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 class ADJUST_DUTY_MODE(Enum):
     DIRECTION = 1
     ANGLE = 2
+    STRAIGHT = 3
 
 
 class Motor:
@@ -118,6 +119,21 @@ class Motor:
                         break
                 else:
                     count = 0
+                time.sleep(0.02)
+        elif mode == ADJUST_DUTY_MODE.STRAIGHT:
+            self.gyroangle.reset()
+            self.pid.reset(setpoint=0) 
+            
+            current = time.monotonic()
+            while time.monotonic() - current < sec:
+                gyrodata = self.gyroangle.get_angle()
+                correction = self.pid.calc(pid_controller.wrap_deg(gyrodata))
+                
+                with self._lock:
+                    self.right_duty = self.baseduty - correction
+                    self.left_duty = self.baseduty + correction
+                    self.changeFlag = True
+                    
                 time.sleep(0.02)
             self.right_duty = self.left_duty = 0
             self.changeFlag = True

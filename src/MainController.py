@@ -114,7 +114,10 @@ def main():
                 # キャリア脱出
                 threading.Thread(target=mv.move, daemon=True).start()
                 logging.info("キャリア脱出")
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
+                if flag.gyro_available:
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
+                else:
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
                 time.sleep(s + 2)
                 NEXT_STATE = state.STATE_WAIT_GPS_FIX
             elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
@@ -128,7 +131,10 @@ def main():
                 logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
                 write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
+                if flag.gyro_available:
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
+                else:
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
                 time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_GET_GPS_DATA:
@@ -165,11 +171,10 @@ def main():
                     motor.ADJUST_DUTY_MODE.ANGLE, target_angle=calculate_result["deg"], sec=(s := 8)
                 )
                 time.sleep(s + 2)
-                mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.DIRECTION,
-                    "forward",
-                    sec = (s := 5)
-                )
+                if flag.gyro_available:
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
+                else:
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
                 time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_MOVE_DIRECTION:
@@ -204,7 +209,11 @@ def main():
             elif NEXT_STATE == state.STATE_MOVE:
                 logging.info("STATE_MOVE")
                 if dir == "forward":
-                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 8)
+                    if flag.gyro_available:
+                        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
+                    else:
+                        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
+                    time.sleep(s + 2)
                 elif dir == "right" or dir == "left":
                     mv.adjust_duty_cycle(
                         motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4 * 45 / 180
