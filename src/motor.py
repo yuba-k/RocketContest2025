@@ -20,7 +20,7 @@ class ADJUST_DUTY_MODE(Enum):
 
 
 class Motor:
-    def __init__(self, gyrosensor = None):
+    def __init__(self, gyrosensor = None, kp = constants.KP, ki = constants.KI, kd = constants.KD):
         config = configloading.Config_reader()
         self.duty = constants.DUTY
         self.baseduty = constants.BASE_DUTY
@@ -30,7 +30,7 @@ class Motor:
         self.left_phase = constants.LEFT_PHASE
 
         self.gyroangle = gyrosensor
-        self.pid = pid_controller.PID(kp=constants.KP, ki=constants.KI, kd=constants.KD, setpoint=0, limits=(-self.baseduty+10, self.baseduty-10))
+        self.pid = pid_controller.PID(kp, ki, kd, setpoint=0, limits=(-self.baseduty+10, self.baseduty-10))
 
         GPIO.setmode(
             GPIO.BCM
@@ -147,7 +147,8 @@ class Motor:
 
 def main():
     try:
-        motor = Motor()
+        kp, ki ,kd = input("p, i, d = ").split(",")
+        motor = Motor(kp = kp, ki = ki, kd = kd)
         threading.Thread(target=motor.move, daemon=True).start()
         while True:
             deg = int(input("DEGREE="))
