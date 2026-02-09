@@ -127,7 +127,7 @@ def main():
                 # キャリア脱出
                 threading.Thread(target=mv.move, daemon=True).start()
                 logging.info("キャリア脱出")
-                send_fm("zensin,simasu")
+                send_fm(fm,"zensin,simasu")
                 if flag.gyro_available:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
@@ -142,7 +142,7 @@ def main():
                         break
                     else:
                         logging.error("位置情報未受信")
-                    send_fm("iti,syutokutyuu")
+                    send_fm(fm,"iti,syutokutyuu")
                 logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
                 write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
