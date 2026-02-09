@@ -195,7 +195,6 @@ def main():
                     calculate_result["dir"],
                     sec = (s := 4 * abs(calculate_result["deg"]) / 180),
                 )
-                time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_GET_PHOTO:
                 logging.info("STATE_GET_PHOTO")
@@ -225,7 +224,6 @@ def main():
                         mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                     else:
                         mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
-                    time.sleep(s + 2)
                 elif dir == "right" or dir == "left":
                     mv.adjust_duty_cycle(
                         motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4 * 45 / 180
