@@ -78,7 +78,7 @@ class Motor:
         if mode == ADJUST_DUTY_MODE.DIRECTION:
             with self._lock:
                 if sec is not None:
-                    self._stop_time = time.monotonic() + sec
+                    self._stop_time = time.time() + sec
             if direction == "forward":
                 self.right_duty = self.duty
                 self.left_duty = self.duty
@@ -101,10 +101,12 @@ class Motor:
             with self._lock:
                 if sec is not None:
                     self._stop_time = current + sec
+            print("time_set")
             while time.monotonic() - current < sec:
                 gyrodata = self.gyroangle.get_angle()
                 gyrodata = self.gyroangle.wrap_deg(gyrodata)
                 pidout = self.pid.calc(gyrodata)#正規化-180<θ<180
+                print(gyrodata, pidout)
                 with self._lock:
                     self.right_duty = self.baseduty - pidout
                     self.left_duty = self.baseduty + pidout
@@ -113,9 +115,11 @@ class Motor:
                     f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty},{self.left_duty}"
                 )
                 error = target_angle - gyrodata
-                if abs(error) < 5:
+                if abs(error) < 3:
                     count += 1
                     if count >5:
+                        self.right_duty = self.left_duty = 0
+                        self.changeFlag = True
                         break
                 else:
                     count = 0
@@ -123,7 +127,9 @@ class Motor:
         elif mode == ADJUST_DUTY_MODE.STRAIGHT:
             self.gyroangle.reset()
             self.pid.reset(setpoint=0) 
-            
+            with self._lock:
+                if sec is not None:
+                    self._stop_time = time.monotonic() + sec
             current = time.monotonic()
             while time.monotonic() - current < sec:
                 gyrodata = self.gyroangle.get_angle()
@@ -180,8 +186,9 @@ def main():
             motor.adjust_duty_cycle(
                 ADJUST_DUTY_MODE.ANGLE,
                 target_angle=target_angle,
-                sec=5
+                sec=10
             )
+           # time.sleep(5)
 
     except KeyboardInterrupt:
         print("\nStopping motor...")
@@ -189,7 +196,6 @@ def main():
     finally:
         if motor is not None:
             motor.cleanup()
-            move_thread.join()
         if gyro is not None:
             gyro.stop()
         print("Clean exit")
