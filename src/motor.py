@@ -63,7 +63,7 @@ class Motor:
         GPIO.output(self.left_phase, GPIO.LOW)
         while self.running:
             with self._lock:
-                if time.time() > self._stop_time:
+                if time.monotonic() - self._stop_time > 0:
                     self._stop_time = 0
                     self.right_duty = self.left_duty = 0
                     self.changeFlag = True
@@ -78,7 +78,7 @@ class Motor:
         if mode == ADJUST_DUTY_MODE.DIRECTION:
             with self._lock:
                 if sec is not None:
-                    self._stop_time = time.time() + sec
+                    self._stop_time = time.monotonic() + sec
             if direction == "forward":
                 self.right_duty = self.duty
                 self.left_duty = self.duty
@@ -100,7 +100,7 @@ class Motor:
             logger.info(f"PID control is performed to achieve {target_angle}.")
             with self._lock:
                 if sec is not None:
-                    self._stop_time = time.time() + sec
+                    self._stop_time = current + sec
             while time.monotonic() - current < sec:
                 gyrodata = self.gyroangle.get_angle()
                 gyrodata = self.gyroangle.wrap_deg(gyrodata)
@@ -182,7 +182,6 @@ def main():
                 target_angle=target_angle,
                 sec=5
             )
-            time.sleep(5)
 
     except KeyboardInterrupt:
         print("\nStopping motor...")
@@ -190,6 +189,7 @@ def main():
     finally:
         if motor is not None:
             motor.cleanup()
+            move_thread.join()
         if gyro is not None:
             gyro.stop()
         print("Clean exit")
