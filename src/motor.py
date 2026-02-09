@@ -152,45 +152,37 @@ def main():
     move_thread = None
 
     try:
+        # PID入力
+        pid_input = input("Enter Kp,Ki,Kd (or q to quit): ")
+        if pid_input.lower() == "q":
+            raise KeyboardInterrupt
+
+        kp, ki, kd = map(float, pid_input.split(","))
+
+        motor = Motor(gyrosensor=gyro, kp=kp, ki=ki, kd=kd)
+        move_thread = threading.Thread(target=motor.move, daemon=True)
+        move_thread.start()
+
+        print("Motor started with PID:", kp, ki, kd)
+
         while True:
-            # PID入力
-            pid_input = input("Enter Kp,Ki,Kd (or q to quit): ")
-            if pid_input.lower() == "q":
-                break
+            cmd = input("Enter target angle (or 'q' to quit): ")
 
-            kp, ki, kd = map(float, pid_input.split(","))
+            if cmd.lower() == "q":
+                raise KeyboardInterrupt
 
-            # Motor初期化（初回のみ or PID変更時に作り直す）
-            if motor is not None:
-                motor.cleanup()
+            try:
+                target_angle = float(cmd)
+            except ValueError:
+                print("Invalid input")
+                continue
 
-            motor = Motor(gyrosensor=gyro, kp=kp, ki=ki, kd=kd)
-            move_thread = threading.Thread(target=motor.move, daemon=True)
-            move_thread.start()
-
-            print("Motor started with PID:", kp, ki, kd)
-
-            while True:
-                cmd = input("Enter target angle (or 'pid' to change PID, 'q' to quit): ")
-
-                if cmd.lower() == "q":
-                    raise KeyboardInterrupt
-
-                if cmd.lower() == "pid":
-                    # PID再入力ループに戻る
-                    break
-
-                try:
-                    target_angle = float(cmd)
-                except ValueError:
-                    print("Invalid input")
-                    continue
-
-                motor.adjust_duty_cycle(
-                    ADJUST_DUTY_MODE.ANGLE,
-                    target_angle=target_angle,
-                    sec=10
-                )
+            motor.adjust_duty_cycle(
+                ADJUST_DUTY_MODE.ANGLE,
+                target_angle=target_angle,
+                sec=5
+            )
+            time.sleep(5)
 
     except KeyboardInterrupt:
         print("\nStopping motor...")
@@ -198,7 +190,8 @@ def main():
     finally:
         if motor is not None:
             motor.cleanup()
+        if gyro is not None:
+            gyro.stop()
         print("Clean exit")
-
 if __name__ == "__main__":
     main()
