@@ -132,7 +132,6 @@ def main():
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
-                time.sleep(s + 2)
                 NEXT_STATE = state.STATE_WAIT_GPS_FIX
             elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
                 logging.info("STATE_WAIT_GPS_FIX")
@@ -150,7 +149,6 @@ def main():
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
-                time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_GET_GPS_DATA:
                 logging.info("STATE_GET_GPS_DATA")
@@ -185,12 +183,10 @@ def main():
                 mv.adjust_duty_cycle(
                     motor.ADJUST_DUTY_MODE.ANGLE, target_angle=calculate_result["deg"], sec=(s := 8)
                 )
-                time.sleep(s + 2)
                 if flag.gyro_available:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
-                time.sleep(s + 2)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_MOVE_DIRECTION:
                 logging.info("STATE_MOVE_DIRECTION")
