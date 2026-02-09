@@ -147,12 +147,13 @@ class Motor:
 
 def main():
     try:
-        kp, ki ,kd = input("p, i, d = ").split(",")
-        motor = Motor(kp = kp, ki = ki, kd = kd)
         threading.Thread(target=motor.move, daemon=True).start()
         while True:
+            kp, ki ,kd = input("p, i, d = ").split(",")
+            motor = Motor(kp = kp, ki = ki, kd = kd)
             deg = int(input("DEGREE="))
             motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE, target_angle=deg, sec=10)
+            motor.cleanup()
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
     finally:
