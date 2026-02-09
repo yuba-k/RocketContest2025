@@ -146,19 +146,57 @@ class Motor:
 
 
 def main():
-    try:
-        threading.Thread(target=motor.move, daemon=True).start()
-        while True:
-            kp, ki ,kd = input("p, i, d = ").split(",")
-            motor = Motor(kp = kp, ki = ki, kd = kd)
-            deg = int(input("DEGREE="))
-            motor.adjust_duty_cycle(ADJUST_DUTY_MODE.ANGLE, target_angle=deg, sec=10)
-            motor.cleanup()
-    except KeyboardInterrupt:
-        print("KeyboardInterrupt")
-    finally:
-        motor.cleanup()
+    motor = None
+    move_thread = None
 
+    try:
+        while True:
+            # PID入力
+            pid_input = input("Enter Kp,Ki,Kd (or q to quit): ")
+            if pid_input.lower() == "q":
+                break
+
+            kp, ki, kd = map(float, pid_input.split(","))
+
+            # Motor初期化（初回のみ or PID変更時に作り直す）
+            if motor is not None:
+                motor.cleanup()
+
+            motor = Motor(kp=kp, ki=ki, kd=kd)
+            move_thread = threading.Thread(target=motor.move, daemon=True)
+            move_thread.start()
+
+            print("Motor started with PID:", kp, ki, kd)
+
+            while True:
+                cmd = input("Enter target angle (or 'pid' to change PID, 'q' to quit): ")
+
+                if cmd.lower() == "q":
+                    raise KeyboardInterrupt
+
+                if cmd.lower() == "pid":
+                    # PID再入力ループに戻る
+                    break
+
+                try:
+                    target_angle = float(cmd)
+                except ValueError:
+                    print("Invalid input")
+                    continue
+
+                motor.adjust_duty_cycle(
+                    ADJUST_DUTY_MODE.ANGLE,
+                    target_angle=target_angle,
+                    sec=10
+                )
+
+    except KeyboardInterrupt:
+        print("\nStopping motor...")
+
+    finally:
+        if motor is not None:
+            motor.cleanup()
+        print("Clean exit")
 
 if __name__ == "__main__":
     main()
