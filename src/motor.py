@@ -146,6 +146,8 @@ class Motor:
 
 
 def main():
+    import gyro_angle
+    gyro = gyro_angle.GYRO()
     motor = None
     move_thread = None
 
@@ -162,7 +164,7 @@ def main():
             if motor is not None:
                 motor.cleanup()
 
-            motor = Motor(kp=kp, ki=ki, kd=kd)
+            motor = Motor(gyrosensor=gyro, kp=kp, ki=ki, kd=kd)
             move_thread = threading.Thread(target=motor.move, daemon=True)
             move_thread.start()
 
