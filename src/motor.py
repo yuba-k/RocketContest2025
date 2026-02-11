@@ -74,6 +74,38 @@ class Motor:
             else:
                 time.sleep(0.05)
 
+    def rotate_to_angle_pid(self, target_angle:float, sec:float, current:int):
+        self.gyroangle.reset()
+        self.pid.reset(setpoint=target_angle)
+        logger.info(f"PID control is performed to achieve {target_angle}.")
+        with self._lock:
+            if sec is not None:
+                self._stop_time = current + sec
+        print("time_set")
+        while time.monotonic() - current < sec:
+            gyrodata = self.gyroangle.get_angle()
+            gyrodata = self.gyroangle.wrap_deg(gyrodata)#正規化-180<θ<180
+            pidout = self.pid.calc(gyrodata)
+            print(gyrodata, pidout)
+            with self._lock:
+                self.right_duty = self.baseduty - pidout
+                self.left_duty = self.baseduty + pidout
+                self.changeFlag = True
+            logger.debug(
+                f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty},{self.left_duty}"
+            )
+            error = target_angle - gyrodata
+            if abs(error) < 3:
+                count += 1
+                if count >5:
+                    self.right_duty = self.left_duty = 0
+                    self.changeFlag = True
+                    break
+            else:
+                count = 0
+            time.sleep(0.02)
+
+
     def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None):
         if mode == ADJUST_DUTY_MODE.DIRECTION:
             with self._lock:
@@ -94,36 +126,14 @@ class Motor:
             self.changeFlag = True
         elif mode == ADJUST_DUTY_MODE.ANGLE:
             count = 0
-            current = time.monotonic()
-            self.gyroangle.reset()
-            self.pid.reset(setpoint=target_angle)
-            logger.info(f"PID control is performed to achieve {target_angle}.")
-            with self._lock:
-                if sec is not None:
-                    self._stop_time = current + sec
-            print("time_set")
-            while time.monotonic() - current < sec:
-                gyrodata = self.gyroangle.get_angle()
-                gyrodata = self.gyroangle.wrap_deg(gyrodata)#正規化-180<θ<180
-                pidout = self.pid.calc(gyrodata)
-                print(gyrodata, pidout)
-                with self._lock:
-                    self.right_duty = self.baseduty - pidout
-                    self.left_duty = self.baseduty + pidout
-                    self.changeFlag = True
-                logger.debug(
-                    f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty},{self.left_duty}"
-                )
-                error = target_angle - gyrodata
-                if abs(error) < 3:
-                    count += 1
-                    if count >5:
-                        self.right_duty = self.left_duty = 0
-                        self.changeFlag = True
-                        break
-                else:
-                    count = 0
-                time.sleep(0.02)
+            angel = target_angle % 91
+            if angel <= 90:
+                current = time.monotonic()
+                self.rotate_to_angle_pid(target_angle, sec, current)
+            else:
+                for dis_angle in [90,angel]:
+                    current = time.monotonic()
+                    self.rotate_to_angle_pid(dis_angle, sec, current)
         elif mode == ADJUST_DUTY_MODE.STRAIGHT:
             self.gyroangle.reset()
             self.pid.reset(setpoint=0) 
