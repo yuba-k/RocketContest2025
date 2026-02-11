@@ -104,8 +104,8 @@ class Motor:
             print("time_set")
             while time.monotonic() - current < sec:
                 gyrodata = self.gyroangle.get_angle()
-                gyrodata = self.gyroangle.wrap_deg(gyrodata)
-                pidout = self.pid.calc(gyrodata)#正規化-180<θ<180
+                gyrodata = self.gyroangle.wrap_deg(gyrodata)#正規化-180<θ<180
+                pidout = self.pid.calc(gyrodata)
                 print(gyrodata, pidout)
                 with self._lock:
                     self.right_duty = self.baseduty - pidout
