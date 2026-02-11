@@ -125,12 +125,15 @@ class Motor:
             logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
             self.changeFlag = True
         elif mode == ADJUST_DUTY_MODE.ANGLE:
+            if sec < 4:
+                raise ValueError(f"引数secが短すぎます:{sec}\nsecは4秒以上")
             count = 0
             angel = target_angle % 91
             if angel <= 90:
                 current = time.monotonic()
                 self.rotate_to_angle_pid(target_angle, sec, current)
             else:
+                sec1, sec2 = 4, sec-4
                 for dis_angle in [90,angel]:
                     current = time.monotonic()
                     self.rotate_to_angle_pid(dis_angle, sec, current)
