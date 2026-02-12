@@ -74,7 +74,7 @@ class Motor:
             else:
                 time.sleep(0.05)
 
-    def rotate_to_angle_pid(self, target_angle:float, sec:float, stable_count_threshold:int):
+    def rotate_to_angle_pid(self, target_angle:float, sec:float, stable_count_threshold:int,stable_error:int):
         current = time.monotonic()
         self.gyroangle.reset()
         self.pid.reset(setpoint=target_angle)
@@ -96,7 +96,7 @@ class Motor:
                 f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty},{self.left_duty}"
             )
             error = target_angle - gyrodata
-            if abs(error) < 3:
+            if abs(error) < stable_error:
                 count += 1
                 if count > stable_count_threshold:
                     self.right_duty = self.left_duty = 0
@@ -131,12 +131,13 @@ class Motor:
             count = 0
             div = target_angle / 90
             if div <= 1:
-                self.rotate_to_angle_pid(target_angle, sec, stable_count_threshold = 5)
+                self.rotate_to_angle_pid(target_angle, sec, stable_count_threshold = 5,stable_error=3)
             else:
-                sec1, sec2 = 4, sec-4
+                sec1, sec2 = 8, sec-4
                 threshold1, threshold2 = 1, 5
-                for dis_angle, sec, threshold in zip([90,target_angle-90],[sec1,sec2],[threshold1,threshold2]):
-                    self.rotate_to_angle_pid(dis_angle, sec, threshold)
+                for dis_angle, sec, threshold, err in zip([90,target_angle-90],[sec1,sec2],[threshold1,threshold2],[5,3]):
+                    print(dis_angle,sec,threshold)
+                    self.rotate_to_angle_pid(dis_angle, sec, threshold,err)
         elif mode == ADJUST_DUTY_MODE.STRAIGHT:
             self.gyroangle.reset()
             self.pid.reset(setpoint=0) 
