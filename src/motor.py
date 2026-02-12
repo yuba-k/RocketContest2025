@@ -128,7 +128,7 @@ class Motor:
             if sec < 4:
                 raise ValueError(f"引数secが短すぎます:{sec}\nsecは4秒以上")
             count = 0
-            div = target_angle % 90
+            div = target_angle / 90
             if div <= 1:
                 current = time.monotonic()
                 self.rotate_to_angle_pid(target_angle, sec, current, stable_count_threshold = 5)
