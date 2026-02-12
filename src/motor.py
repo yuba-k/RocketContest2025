@@ -74,7 +74,7 @@ class Motor:
             else:
                 time.sleep(0.05)
 
-    def rotate_to_angle_pid(self, target_angle:float, sec:float, current:int):
+    def rotate_to_angle_pid(self, target_angle:float, sec:float, current:int, stable_count_threshold:int):
         self.gyroangle.reset()
         self.pid.reset(setpoint=target_angle)
         logger.info(f"PID control is performed to achieve {target_angle}.")
@@ -97,7 +97,7 @@ class Motor:
             error = target_angle - gyrodata
             if abs(error) < 3:
                 count += 1
-                if count >5:
+                if count > stable_count_threshold:
                     self.right_duty = self.left_duty = 0
                     self.changeFlag = True
                     break
@@ -128,15 +128,16 @@ class Motor:
             if sec < 4:
                 raise ValueError(f"引数secが短すぎます:{sec}\nsecは4秒以上")
             count = 0
-            angel = target_angle % 91
-            if angel <= 90:
+            angle = target_angle % 91
+            if angle <= 90:
                 current = time.monotonic()
-                self.rotate_to_angle_pid(target_angle, sec, current)
+                self.rotate_to_angle_pid(target_angle, sec, current, stable_count_threshold = 5)
             else:
                 sec1, sec2 = 4, sec-4
-                for dis_angle in [90,angel]:
+                threshold1, threshold2 = 1, 5
+                for dis_angle, sec, threshold in zip([90,angle],[sec1,sec2],[threshold1,threshold2]):
                     current = time.monotonic()
-                    self.rotate_to_angle_pid(dis_angle, sec, current)
+                    self.rotate_to_angle_pid(dis_angle, sec, current, threshold)
         elif mode == ADJUST_DUTY_MODE.STRAIGHT:
             self.gyroangle.reset()
             self.pid.reset(setpoint=0) 
