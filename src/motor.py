@@ -74,7 +74,8 @@ class Motor:
             else:
                 time.sleep(0.05)
 
-    def rotate_to_angle_pid(self, target_angle:float, sec:float, current:int, stable_count_threshold:int):
+    def rotate_to_angle_pid(self, target_angle:float, sec:float, stable_count_threshold:int):
+        current = time.monotonic()
         self.gyroangle.reset()
         self.pid.reset(setpoint=target_angle)
         logger.info(f"PID control is performed to achieve {target_angle}.")
@@ -130,14 +131,12 @@ class Motor:
             count = 0
             div = target_angle / 90
             if div <= 1:
-                current = time.monotonic()
-                self.rotate_to_angle_pid(target_angle, sec, current, stable_count_threshold = 5)
+                self.rotate_to_angle_pid(target_angle, sec, stable_count_threshold = 5)
             else:
                 sec1, sec2 = 4, sec-4
                 threshold1, threshold2 = 1, 5
                 for dis_angle, sec, threshold in zip([90,target_angle-90],[sec1,sec2],[threshold1,threshold2]):
-                    current = time.monotonic()
-                    self.rotate_to_angle_pid(dis_angle, sec, current, threshold)
+                    self.rotate_to_angle_pid(dis_angle, sec, threshold)
         elif mode == ADJUST_DUTY_MODE.STRAIGHT:
             self.gyroangle.reset()
             self.pid.reset(setpoint=0) 
