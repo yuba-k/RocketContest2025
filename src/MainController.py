@@ -4,6 +4,7 @@ import logging.config
 import time
 from enum import Enum, auto
 import threading
+import queue
 
 import camera2
 import constants
@@ -39,6 +40,8 @@ class flag:
     backlight_avoidance = True
     fm_available = True
 
+frame_q = queue.Queue(maxsize=1)
+stop_event = threading.Event()
 
 def forced_stop(runtime: int):
     logging.info(f"強制終了命令をセット:{runtime}s")
@@ -85,6 +88,35 @@ def send_fm(fm,msg:str) -> None:
         fm.transmitFMMessage(msg)
     else:
         pass
+
+def start_camera(picam):
+    i = 0
+    while not stop_event.is_set():
+        frame = picam.cap(cnt=i)
+        i += 1
+        try:
+            if frame_q.full():
+                frame_q.get_nowait()
+            frame_q.put_nowait(frame)
+        except queue.Full:
+            pass
+
+def approach_short(mv, picam):
+    cmd = ""
+    cnt = 0
+    while not stop_event.is_set():
+        try:
+            frame = frame_q.get()
+        except queue.Empty:
+            continue
+        cmd, rs = imgProcess.imgprocess(frame)
+        picam.save(rs, "../img/result/{cnt}test_cv2.jpg", camera2.COLOR_MODE.RGB)
+        if cmd == "goal":
+            mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
+            logging.info("ゴールしました")
+            stop_event.set()
+        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
+        cnt += 1
 
 def main():
     try:
@@ -196,43 +228,54 @@ def main():
                     sec = (s := 4 * abs(calculate_result["deg"]) / 180),
                 )
                 NEXT_STATE = state.STATE_GET_GPS_DATA
-            elif NEXT_STATE == state.STATE_GET_PHOTO:
-                logging.info("STATE_GET_PHOTO")
-                img = cm.cap(imgcnt)
-                imgcnt += 1
-                NEXT_STATE = state.STATE_TARGET_DETECTION
             elif NEXT_STATE == state.STATE_TARGET_DETECTION:
-                logging.info("STATE_TARGET_DETECTION")
-                dir, afimg = imgProcess.imgprocess(img)
-                cm.save(afimg, f"../img/result/{imgcnt}afimg.jpg",camera2.COLOR_MODE.RGB)
-                if dir == "goal":
-                    NEXT_STATE = state.STATE_GOAL
-                    GOAL_REASON = "SuccesufulAllPhase"
-                elif dir == "search":
-                    if noimgcnt > 10:
-                        NEXT_STATE = state.STATE_WAIT_GPS_FIX
-                    else:
-                        noimgcnt += 1
-                        NEXT_STATE = state.STATE_MOVE
-                        dir = "right"
-                else:
-                    NEXT_STATE = state.STATE_MOVE
-            elif NEXT_STATE == state.STATE_MOVE:
-                logging.info("STATE_MOVE")
-                if dir == "forward":
-                    if flag.gyro_available:
-                        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
-                    else:
-                        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
-                elif dir == "right" or dir == "left":
-                    mv.adjust_duty_cycle(
-                        motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4 * 45 / 180
-                    )
-                elif dir == "search":
-                    mv.adjust_duty_cycle(
-                        motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4 * 60 / 180
-                    )
-                NEXT_STATE = state.STATE_TARGET_DETECTION
+                cam_thread = threading.Thread(target=start_camera, args=(cm,), daemon=True)
+                cam_thread.start()
+
+                imgdetect_thread = threading.Thread(target=approach_short, args=(mv, cm,), daemon=True)
+                imgdetect_thread.start()
+
+                while not stop_event.is_set():
+                    time.sleep(1)
+                GOAL_REASON = "SuccesufulAllPhase"
+                NEXT_STATE = state.STATE_GOAL
+            # elif NEXT_STATE == state.STATE_GET_PHOTO:
+            #     logging.info("STATE_GET_PHOTO")
+            #     img = cm.cap(imgcnt)
+            #     imgcnt += 1
+            #     NEXT_STATE = state.STATE_TARGET_DETECTION
+            # elif NEXT_STATE == state.STATE_TARGET_DETECTION:
+            #     logging.info("STATE_TARGET_DETECTION")
+            #     dir, afimg = imgProcess.imgprocess(img)
+            #     cm.save(afimg, f"../img/result/{imgcnt}afimg.jpg",camera2.COLOR_MODE.RGB)
+            #     if dir == "goal":
+            #         NEXT_STATE = state.STATE_GOAL
+            #         GOAL_REASON = "SuccesufulAllPhase"
+            #     elif dir == "search":
+            #         if noimgcnt > 10:
+            #             NEXT_STATE = state.STATE_WAIT_GPS_FIX
+            #         else:
+            #             noimgcnt += 1
+            #             NEXT_STATE = state.STATE_MOVE
+            #             dir = "right"
+            #     else:
+            #         NEXT_STATE = state.STATE_MOVE
+            # elif NEXT_STATE == state.STATE_MOVE:
+            #     logging.info("STATE_MOVE")
+            #     if dir == "forward":
+            #         if flag.gyro_available:
+            #             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
+            #         else:
+            #             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
+            #     elif dir == "right" or dir == "left":
+            #         mv.adjust_duty_cycle(
+            #             motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4 * 45 / 180
+            #         )
+            #     elif dir == "search":
+            #         mv.adjust_duty_cycle(
+            #             motor.ADJUST_DUTY_MODE.DIRECTION, dir, sec = 4 * 60 / 180
+            #         )
+            #     NEXT_STATE = state.STATE_TARGET_DETECTION
             elif NEXT_STATE == state.ERROR:
                 logging.info("ERROR")
                 logging.critical("強制停止/異常によりプログラムを終了します")
