@@ -18,5 +18,5 @@ ls -l /dev/serial0
 
 NMEA文をstdoutに出力させる
 ```shell
-sudo minicom -b 9600 -d /dev/serial0
+sudo minicom -b 9600 -D /dev/serial0
 ```
