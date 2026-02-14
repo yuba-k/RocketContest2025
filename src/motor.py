@@ -63,7 +63,7 @@ class Motor:
         GPIO.output(self.left_phase, GPIO.LOW)
         while self.running:
             with self._lock:
-                if time.monotonic() - self._stop_time > 0:
+                if time.monotonic() > self._stop_time:
                     self._stop_time = 0
                     self.right_duty = self.left_duty = 0
                     self.changeFlag = True
@@ -75,6 +75,7 @@ class Motor:
                 time.sleep(0.05)
 
     def rotate_to_angle_pid(self, target_angle:float, sec:float, stable_count_threshold:int,stable_error:int):
+        count = 0
         current = time.monotonic()
         self.gyroangle.reset()
         self.pid.reset(setpoint=target_angle)
@@ -83,7 +84,7 @@ class Motor:
             if sec is not None:
                 self._stop_time = current + sec
         print("time_set")
-        while time.monotonic() - current < sec:
+        while time.monotonic() < self._stop_time:
             gyrodata = self.gyroangle.get_angle()
             gyrodata = self.gyroangle.wrap_deg(gyrodata)#正規化-180<θ<180
             pidout = self.pid.calc(gyrodata)
@@ -111,7 +112,7 @@ class Motor:
         if mode == ADJUST_DUTY_MODE.DIRECTION:
             with self._lock:
                 if sec is not None:
-                    self._stop_time = time.time() + sec
+                    self._stop_time = time.monotonic() + sec
             if direction == "forward":
                 self.right_duty = self.duty
                 self.left_duty = self.duty
@@ -144,8 +145,7 @@ class Motor:
             with self._lock:
                 if sec is not None:
                     self._stop_time = time.monotonic() + sec
-            current = time.monotonic()
-            while time.monotonic() - current < sec:
+            while time.monotonic() < self._stop_time:
                 gyrodata = self.gyroangle.get_angle()
                 correction = self.pid.calc(pid_controller.wrap_deg(gyrodata))
                 
