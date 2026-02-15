@@ -143,7 +143,7 @@ def detect_objects_long_range(img):
 
 
 def main():
-    path = "../imgsets/20251206/1280x720/jpg"
+    path = "../img/original"
     files = os.listdir(path)
     for fname in files:
         try:

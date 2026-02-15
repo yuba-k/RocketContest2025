@@ -9,3 +9,6 @@ memo.txt
 model/__pycache__
 imgsets/
 logs/
+docs/*.drawio
+docs/*.png
+docs/*.svg
