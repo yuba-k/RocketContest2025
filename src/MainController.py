@@ -283,9 +283,12 @@ def main():
             elif NEXT_STATE == state.STATE_GOAL:
                 logging.info("STATE_GOAL")
                 logging.info(f"ゴール判定:{GOAL_REASON}")
-                cm.disconnect()
-                mv.cleanup()
-                gps.disconnect()
+                if cm is not None:
+                    cm.disconnect()
+                if mv is not None:
+                    mv.cleanup()
+                if gps is not None:
+                    gps.disconnect()
                 break
     except Exception as e:
             if cm is not None:
