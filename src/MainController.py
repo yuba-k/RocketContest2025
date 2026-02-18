@@ -153,6 +153,7 @@ def main():
                 NEXT_STATE = state.STATE_WAIT_DEPLOYMENT
             elif NEXT_STATE == state.STATE_WAIT_DEPLOYMENT:
                 logging.info("STATE_WAIT_DEPLOYMENT")
+                send_fm(fm, "taikityu-")
                 start.awaiting()
                 # ミッション開始時間を記録
                 MISSION_START = time.monotonic()
@@ -168,6 +169,7 @@ def main():
             elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
                 logging.info("STATE_WAIT_GPS_FIX")
                 while True:
+                    send_fm(fm, "de-tasyutokutyu-")
                     lat, lon, satellites, utc_time, dop = gps.get_gps_data()
                     if lat is not None and lon is not None:
                         break
@@ -178,6 +180,7 @@ def main():
                 write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
                 if flag.gyro_available:
+                    send_fm(fm, "zensin-")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
@@ -186,6 +189,7 @@ def main():
                 logging.info("STATE_GET_GPS_DATA")
                 past_position = current_position.copy()
                 while True:
+                    send_fm(fm, "de-tasyutokutyu-")
                     lat, lon, satellites, utc_time, dop = gps.get_gps_data()
                     if lat is not None and lon is not None and gpsnew.is_correct(lat, lon, past_position):
                         break
@@ -201,6 +205,7 @@ def main():
                 )
                 logging.info(f"deg:{calculate_result['deg']}\tdis:{calculate_result['distance']}")
                 if calculate_result["dir"] == "Immediate":
+                    send_fm(fm, "mokuhyo-,toutyaku")
                     if flag.camera_available:
                         NEXT_STATE = state.STATE_GET_PHOTO
                     else:
