@@ -46,7 +46,7 @@ class Camera:
         try:
             im = self.picam.capture_array()
             im = cv2.flip(im, -1)
-            self.save(im, "../img/default/{cnt}test_cv2.jpg", COLOR_MODE.RGB)
+            self.save(im, f"../img/default/{cnt}test_cv2.jpg", COLOR_MODE.RGB)
             return im
         except Exception as e:
             logger.error(f"ImgSaveError:{e}")
