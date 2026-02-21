@@ -207,7 +207,7 @@ def main():
                 if calculate_result["dir"] == "Immediate":
                     send_fm(fm, "mokuhyo-,toutyaku")
                     if flag.camera_available:
-                        NEXT_STATE = state.STATE_GET_PHOTO
+                        NEXT_STATE = state.STATE_TARGET_DETECTION
                     else:
                         NEXT_STATE = state.STATE_GOAL
                         GOAL_REASON = "CameraDisavailable/EarlyTermination"
