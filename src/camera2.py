@@ -23,7 +23,7 @@ class Camera:
         try:
             self.picam = Picamera2()
             self.picam.configure(
-                self.picam.create_still_configuration(
+                self.picam.create_preview_configuration(
                     main={
                         "format": "RGB888",
                         "size": (constants.WIDTH, constants.HEIGHT),
