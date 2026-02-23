@@ -86,7 +86,6 @@ class Motor:
         print("time_set")
         while time.monotonic() < self._stop_time:
             gyrodata = self.gyroangle.get_angle()
-            gyrodata = self.gyroangle.wrap_deg(gyrodata)#正規化-180<θ<180
             pidout = self.pid.calc(gyrodata)
             print(gyrodata, pidout)
             with self._lock:
@@ -140,7 +139,7 @@ class Motor:
                     print(dis_angle,sec,threshold)
                     self.rotate_to_angle_pid(dis_angle, sec, threshold,err)
         elif mode == ADJUST_DUTY_MODE.STRAIGHT:
-            self.gyroangle.reset()
+            self.gyroangle.start()
             self.pid.reset(setpoint=0) 
             with self._lock:
                 if sec is not None:

@@ -7,6 +7,7 @@ import logging
 import board
 import error
 from adafruit_lsm6ds.lsm6ds33 import LSM6DS33
+from adafruit_lsm6ds import Rate, GyroRange
 
 logger = logging.getLogger(__name__)
 
@@ -16,15 +17,10 @@ class GYRO:
             i2c = board.I2C()
             self.sensor = LSM6DS33(i2c)
 
-            self.gyro_z = 0.0
-            self.offset_z = 0.0
-            self.sample_rate = sample_rate
-            self.running = True
+            self.sensor.gyro_data_rate = Rate.RATE_416_HZ
+            self.sensor.gyro_range = GyroRange.RANGE_250_DPS
 
-            self.recalibrate()
-
-            self.thread = threading.Thread(target=self._update_loop, daemon=True)
-            self.thread.start()
+            self.alplha = 0.2
         except Exception as e:
             logger.critical("6軸初期化エラー")
             raise error.ERROR_GYRO_INIT from e
@@ -33,11 +29,11 @@ class GYRO:
         # [-180, 180) に正規化
         return (x + 180.0) % 360.0 - 180.0
 
-    def recalibrate(self, samples = 200):
-        total = 0
+    def _calibrate(self, samples = 1000):
+        total = 0.0
         for _ in range(samples):
             total += self.sensor.gyro[2]
-            time.sleep(0.005)
+            time.sleep(1/416)
         self.offset_z = math.degrees(total) / samples
 
     def _update_loop(self):
@@ -47,31 +43,37 @@ class GYRO:
             dt = current_time - last_time
 
             raw_z = math.degrees(self.sensor.gyro[2]) - self.offset_z
-
-            if abs(raw_z) < 0.005:
-                raw_z = 0
-
-            self.gyro_z += raw_z * dt
+            self.filtered = self.alplha * raw_z + (1-self.alplha) * self.filtered
+            self.gyro_z += self.filtered * dt
             
             last_time = current_time
-            time.sleep(self.sample_rate)
+            time.sleep(1/416)
 
     def get_angle(self):
-        return self.gyro_z
+        return self.wrap_deg(self.gyro_z)
     
-    def reset(self):
+    def start(self):
         self.gyro_z = 0.0
-        self.recalibrate()
+        self.filtered = 0.0
+        self.running = True
+        self.threadLoad = threading.Thread(target=self._update_loop, daemon=True)
+        self.threadLoad.start()
 
     def stop(self):
         self.running = False
+        self.threadLoad.join()
 
 def main():
-    gyro = GYRO()
-    while True:
-        gyro_z = gyro.get_angle()
-        print(f"{gyro_z:3.3f}°")
-        time.sleep(0.05)
+    try:
+        gyro = GYRO()
+        gyro.start()
+        while True:
+            gyro_z = gyro.get_angle()
+            print(f"{gyro_z:3.3f}°")
+            time.sleep(0.05)
+    except Exception:
+        if gyro is not None:
+            gyro.stop()
 
 if __name__ == "__main__":
     main()
