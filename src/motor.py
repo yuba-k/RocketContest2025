@@ -101,6 +101,7 @@ class Motor:
                 if count > stable_count_threshold:
                     self.right_duty = self.left_duty = 0
                     self.changeFlag = True
+                    self.gyroangle.stop()
                     break
             else:
                 count = 0
@@ -130,14 +131,15 @@ class Motor:
                 raise ValueError(f"引数secが短すぎます:{sec}\nsecは4秒以上")
             count = 0
             div = target_angle / 90
-            if div <= 1:
-                self.rotate_to_angle_pid(target_angle, sec, stable_count_threshold = 5,stable_error=3)
-            else:
-                sec1, sec2 = 8, sec-4
-                threshold1, threshold2 = 1, 5
-                for dis_angle, sec, threshold, err in zip([90,target_angle-90],[sec1,sec2],[threshold1,threshold2],[5,3]):
-                    print(dis_angle,sec,threshold)
-                    self.rotate_to_angle_pid(dis_angle, sec, threshold,err)
+            self.rotate_to_angle_pid(target_angle, sec, 5, 3)
+            # if div <= 1:
+            #     self.rotate_to_angle_pid(target_angle, sec, stable_count_threshold = 5,stable_error=3)
+            # else:
+            #     sec1, sec2 = 8, sec-4
+            #     threshold1, threshold2 = 1, 5
+            #     for dis_angle, sec, threshold, err in zip([90,target_angle-90],[sec1,sec2],[threshold1,threshold2],[5,3]):
+            #         print(dis_angle,sec,threshold)
+            #         self.rotate_to_angle_pid(dis_angle, sec, threshold,err)
         elif mode == ADJUST_DUTY_MODE.STRAIGHT:
             self.gyroangle.start()
             self.pid.reset(setpoint=0) 
