@@ -101,6 +101,7 @@ class Motor:
                 if count > stable_count_threshold:
                     self.right_duty = self.left_duty = 0
                     self.changeFlag = True
+                    self._stop_time = time.monotonic() - 1
                     self.gyroangle.stop()
                     break
             else:
