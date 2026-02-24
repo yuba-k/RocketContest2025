@@ -101,7 +101,7 @@ def start_camera(picam):
         except queue.Full:
             pass
 
-def approach_short(mv, picam):
+def approach_short(mv, picam, fm):
     cmd = ""
     cnt = 0
     while not stop_event.is_set():
@@ -115,7 +115,13 @@ def approach_short(mv, picam):
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
             logging.info("ゴールしました")
             stop_event.set()
-        mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
+        else:
+            if cmd == "search":
+                send_fm(fm, "sagasitemasu")
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "right")
+            else:
+                send_fm(fm, "mituketa")
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
         cnt += 1
 
 def main():
@@ -237,7 +243,7 @@ def main():
                 cam_thread = threading.Thread(target=start_camera, args=(cm,), daemon=True)
                 cam_thread.start()
 
-                imgdetect_thread = threading.Thread(target=approach_short, args=(mv, cm,), daemon=True)
+                imgdetect_thread = threading.Thread(target=approach_short, args=(mv, cm, fm), daemon=True)
                 imgdetect_thread.start()
 
                 while not stop_event.is_set():
