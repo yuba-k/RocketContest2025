@@ -157,7 +157,7 @@ def calculate_target_distance_angle(
     )  # m単位で距離を表現
     if distance <= TARGET_DISTANCE:
         # 5m以内
-        result = {"dir": "Immediate", "deg": "0", "distance": distance}
+        result = {"dir": "Immediate", "deg": 0, "distance": distance}
         return result
     
     if degree <= -45:
