@@ -56,6 +56,7 @@ class GYRO:
         self.gyro_z = 0.0
         self.filtered = 0.0
         self.running = True
+        self._calibrate()
         self.threadLoad = threading.Thread(target=self._update_loop, daemon=True)
         self.threadLoad.start()
 

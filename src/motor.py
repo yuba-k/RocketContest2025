@@ -77,13 +77,13 @@ class Motor:
     def rotate_to_angle_pid(self, target_angle:float, sec:float, stable_count_threshold:int,stable_error:int):
         count = 0
         current = time.monotonic()
-        self.gyroangle.reset()
         self.pid.reset(setpoint=target_angle)
         logger.info(f"PID control is performed to achieve {target_angle}.")
         with self._lock:
             if sec is not None:
                 self._stop_time = current + sec
         print("time_set")
+        self.gyroangle.start()
         while time.monotonic() < self._stop_time:
             gyrodata = self.gyroangle.get_angle()
             pidout = self.pid.calc(gyrodata)
