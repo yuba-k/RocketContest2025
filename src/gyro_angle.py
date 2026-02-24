@@ -20,7 +20,7 @@ class GYRO:
             self.sensor.gyro_data_rate = Rate.RATE_416_HZ
             self.sensor.gyro_range = GyroRange.RANGE_250_DPS
 
-            self.alplha = 0.2
+            self.alplha = 0.7
         except Exception as e:
             logger.critical("6軸初期化エラー")
             raise error.ERROR_GYRO_INIT from e

@@ -30,7 +30,7 @@ class Motor:
         self.left_phase = constants.LEFT_PHASE
 
         self.gyroangle = gyrosensor
-        self.pid = pid_controller.PID(kp, ki, kd, setpoint=0, limits=(-self.baseduty+10, self.baseduty-10))
+        self.pid = pid_controller.PID(kp, ki, kd, setpoint=0, limits=(-self.baseduty+30, self.baseduty-30))
 
         GPIO.setmode(
             GPIO.BCM
