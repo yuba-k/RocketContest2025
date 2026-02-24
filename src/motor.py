@@ -63,16 +63,16 @@ class Motor:
         GPIO.output(self.left_phase, GPIO.LOW)
         while self.running:
             with self._lock:
-                if time.monotonic() > self._stop_time:
+                if self._stop_time > 0 and time.monotonic() > self._stop_time:
                     self._stop_time = 0
                     self.right_duty = self.left_duty = 0
                     self.changeFlag = True
-            if self.changeFlag:
-                self.changeFlag = False
-                self.right.ChangeDutyCycle(self.right_duty)
-                self.left.ChangeDutyCycle(self.left_duty)
-            else:
-                time.sleep(0.05)
+                if self.changeFlag:
+                    self.changeFlag = False
+                    self.right.ChangeDutyCycle(self.right_duty)
+                    self.left.ChangeDutyCycle(self.left_duty)
+                else:
+                    time.sleep(0.05)
 
     def rotate_to_angle_pid(self, target_angle:float, sec:float, stable_count_threshold:int,stable_error:int):
         count = 0
