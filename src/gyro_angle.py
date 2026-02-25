@@ -17,6 +17,7 @@ class GYRO:
             i2c = board.I2C()
             self.sensor = LSM6DS33(i2c)
 
+            self._calibrate()
             self.sensor.gyro_data_rate = Rate.RATE_416_HZ
             self.sensor.gyro_range = GyroRange.RANGE_250_DPS
 
@@ -56,7 +57,7 @@ class GYRO:
         self.gyro_z = 0.0
         self.filtered = 0.0
         self.running = True
-        self._calibrate()
+#        self._calibrate()
         self.threadLoad = threading.Thread(target=self._update_loop, daemon=True)
         self.threadLoad.start()
 

@@ -63,16 +63,15 @@ class Motor:
         GPIO.output(self.left_phase, GPIO.LOW)
         while self.running:
             with self._lock:
-                if self._stop_time > 0 and time.monotonic() > self._stop_time:
-                    self._stop_time = 0
-                    self.right_duty = self.left_duty = 0
-                    self.changeFlag = True
+               # if self._stop_time > 0 and time.monotonic() > self._stop_time:
+               #     self._stop_time = 0
+               #     self.right_duty = self.left_duty = 0
+               #     self.changeFlag = True
                 if self.changeFlag:
                     self.changeFlag = False
                     self.right.ChangeDutyCycle(self.right_duty)
                     self.left.ChangeDutyCycle(self.left_duty)
-                else:
-                    time.sleep(0.05)
+            time.sleep(0.01)
 
     def rotate_to_angle_pid(self, target_angle:float, sec:float, stable_count_threshold:int,stable_error:int):
         count = 0
@@ -103,17 +102,21 @@ class Motor:
                     self.changeFlag = True
                     self._stop_time = time.monotonic() - 1
                     self.gyroangle.stop()
+                    print("break")
                     break
             else:
                 count = 0
-            time.sleep(0.02)
-
+            time.sleep(0.01)
+        else:
+            with self._lock:
+                self.right_duty = self.left_duty = 0
+                self.changeFlag = True
 
     def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None):
         if mode == ADJUST_DUTY_MODE.DIRECTION:
-            with self._lock:
-                if sec is not None:
-                    self._stop_time = time.monotonic() + sec
+            #with self._lock:
+            if sec is not None:
+                self._stop_time = time.monotonic() + sec
             if direction == "forward":
                 self.right_duty = self.duty
                 self.left_duty = self.duty
@@ -194,14 +197,14 @@ def main():
                 raise KeyboardInterrupt
 
             try:
-                target_angle = float(cmd)
+                target_angle = (cmd)
             except ValueError:
                 print("Invalid input")
                 continue
 
             motor.adjust_duty_cycle(
-                ADJUST_DUTY_MODE.ANGLE,
-                target_angle=target_angle,
+                ADJUST_DUTY_MODE.DIRECTION,
+                direction=target_angle,
                 sec=10
             )
            # time.sleep(5)
