@@ -58,7 +58,7 @@ class Camera:
                 target=cv2.imwrite, args=(fullpath, im), daemon=True
             ).start()
         elif mode == COLOR_MODE.RGB:
-            im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+            im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
             threading.Thread(
                 target=cv2.imwrite, args=(fullpath, im), daemon=True
             ).start()
