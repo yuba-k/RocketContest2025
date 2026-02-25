@@ -170,7 +170,7 @@ def main():
                 if flag.gyro_available:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
-                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION_TIME, "forward", sec=(s := 10))
                 NEXT_STATE = state.STATE_WAIT_GPS_FIX
             elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
                 logging.info("STATE_WAIT_GPS_FIX")
@@ -189,7 +189,7 @@ def main():
                     send_fm(fm, "zensin-")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
-                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "forward", sec=(s := 10))
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION_TIME, "forward", sec=(s := 10))
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_GET_GPS_DATA:
                 logging.info("STATE_GET_GPS_DATA")
