@@ -17,6 +17,7 @@ class ADJUST_DUTY_MODE(Enum):
     DIRECTION = 1
     ANGLE = 2
     STRAIGHT = 3
+    DIRECTION_TIME = 4
 
 
 class Motor:
@@ -113,10 +114,23 @@ class Motor:
                 self.changeFlag = True
 
     def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None):
-        if mode == ADJUST_DUTY_MODE.DIRECTION:
-            #with self._lock:
-            if sec is not None:
-                self._stop_time = time.monotonic() + sec
+        if mode == ADJUST_DUTY_MODE.DIRECTION_TIME:
+            if direction == "forward":
+                self.right_duty = self.duty
+                self.left_duty = self.duty
+            elif direction == "right" or direction == "search":
+                self.right_duty = self.duty * 0.6
+                self.left_duty = self.duty
+            elif direction == "left":
+                self.right_duty = self.duty * 1.0
+                self.left_duty = self.duty * 0.6
+            else:
+                self.right_duty = self.left_duty = 0
+            self.changeFlag = True
+            while time.monotonic() < self._stop_time:
+                time.sleep(0.02)
+            logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
+        elif mode == ADJUST_DUTY_MODE.DIRECTION:
             if direction == "forward":
                 self.right_duty = self.duty
                 self.left_duty = self.duty
