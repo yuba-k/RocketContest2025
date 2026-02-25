@@ -71,7 +71,7 @@ def get_target_points2(binary, img):
     )
     if countors == ():
         cv2.putText(img, text = "there is not", org = (100,100), fontFace = cv2.FONT_HERSHEY_SIMPLEX, fontScale = 1, color = (0,0,0), thickness = 3)
-        return None, img
+        return "ERROR", img
     for c in countors:
         x, y, w, h = cv2.boundingRect(c)
         cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
