@@ -114,6 +114,7 @@ def approach_short(mv, picam, fm):
         if cmd == "goal":
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
             logging.info("ゴールしました")
+            fm.send(fm, "go-ru,simasita")
             stop_event.set()
         else:
             if cmd == "search":
