@@ -75,7 +75,7 @@ def get_target_points2(binary, img):
     for c in countors:
         x, y, w, h = cv2.boundingRect(c)
         cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
-    return get_center_point(x, y), img
+    return get_center_point(x + w, x), img
 
 
 def get_center_point(right, left, top=None):
