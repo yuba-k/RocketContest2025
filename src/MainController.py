@@ -246,8 +246,8 @@ def main():
                 imgdetect_thread = threading.Thread(target=approach_short, args=(mv, cm, fm), daemon=True)
                 imgdetect_thread.start()
 
-                while not stop_event.is_set():
-                    time.sleep(1)
+                cam_thread.join()
+                imgdetect_thread.join()
                 GOAL_REASON = "SuccesufulAllPhase"
                 NEXT_STATE = state.STATE_GOAL
             # elif NEXT_STATE == state.STATE_GET_PHOTO:
