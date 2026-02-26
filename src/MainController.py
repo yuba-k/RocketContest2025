@@ -114,7 +114,7 @@ def approach_short(mv, picam, fm):
         if cmd == "goal":
             mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
             logging.info("ゴールしました")
-            fm.send(fm, "go-ru,simasita")
+            send_fm(fm, "go-ru,simasita")
             stop_event.set()
         else:
             if cmd == "search":
@@ -133,7 +133,7 @@ def main():
         relay_point = {"lat":constants.RELAY_LAT, "lon":constants.RELAY_LON}
         noimgcnt = 0
         imgcnt = 0
-        cm = cv = gps = fm = None
+        cm = mv = gps = fm = None
 
         MISSION_START = None
         GOAL_REASON = ""
