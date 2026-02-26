@@ -39,6 +39,7 @@ class flag:
     camera_available = True
     backlight_avoidance = True
     fm_available = True
+    waypoint_reached = False#中継地点到達の有無(T:到達済み/回り込まない，F:未到達/順光側経由)
 
 frame_q = queue.Queue(maxsize=1)
 stop_event = threading.Event()
@@ -129,7 +130,13 @@ def main():
     try:
         current_position = {"lat": 0.0, "lon": 0.0}
         past_position = {"lat": 0.0, "lon": 0.0}
+        target_position = {"lat":0.0, "lon":0.0}
         goal_position = {"lat":constants.GOAL_LAT,"lon":constants.GOAL_LON}
+        """順光側経由設定注意
+        lat:緯度 / lon:経度
+        午前中(太陽が東) -> lonを+0.000010(10m東)
+        午後(太陽が西) -> lonを-0.000010(10m西)
+        """
         relay_point = {"lat":constants.RELAY_LAT, "lon":constants.RELAY_LON}
         noimgcnt = 0
         imgcnt = 0
@@ -159,6 +166,11 @@ def main():
                     NEXT_STATE = state.ERROR
                     GOAL_REASON = "Failed to init motor"
                     continue
+                if not(flag.waypoint_reached):#flag:Falsなら順光側経由
+                    target_position = relay_point
+                else:
+                    target_position = goal_position
+                logging.info(f"目標地点:{target_position}")
                 NEXT_STATE = state.STATE_WAIT_DEPLOYMENT
             elif NEXT_STATE == state.STATE_WAIT_DEPLOYMENT:
                 logging.info("STATE_WAIT_DEPLOYMENT")
@@ -210,12 +222,16 @@ def main():
                 write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
                 calculate_result = gpsnew.calculate_target_distance_angle(
-                    current_position, past_position, goal_position, 10
+                    current_position, past_position, target_position, 10
                 )
                 logging.info(f"deg:{calculate_result['deg']}\tdis:{calculate_result['distance']}")
                 if calculate_result["dir"] == "Immediate":
                     send_fm(fm, "mokuhyo-,toutyaku")
-                    if flag.camera_available:
+                    if not(flag.waypoint_reached):
+                        logging.info("順光経由完了")
+                        flag.waypoint_reached = True#順光側経由完了
+                        target_position = goal_position#真のゴールへ
+                    elif flag.camera_available:
                         NEXT_STATE = state.STATE_TARGET_DETECTION
                     else:
                         NEXT_STATE = state.STATE_GOAL
