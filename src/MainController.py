@@ -153,9 +153,11 @@ def main():
                     cm, mv, gps, fm = init()
                 except error.ERROR_GPS_CANNOT_CONNECTION:
                     NEXT_STATE = state.ERROR
+                    GOAL_REASON = "Failed to init gps"
                     continue
                 except error.ERROR_MOTOR_INIT:
                     NEXT_STATE = state.ERROR
+                    GOAL_REASON = "Failed to init motor"
                     continue
                 NEXT_STATE = state.STATE_WAIT_DEPLOYMENT
             elif NEXT_STATE == state.STATE_WAIT_DEPLOYMENT:
