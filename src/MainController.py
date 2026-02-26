@@ -302,8 +302,10 @@ def main():
     except Exception as e:
             if cm is not None:
                 cm.disconnect()
-            mv.cleanup()
-            gps.disconnect()
+            if mv is not None:
+                mv.cleanup()
+            if gps is not None:
+                gps.disconnect()
             logging.critical(f"エラーによる強制終了:{e}")
 
 if __name__ == "__main__":
