@@ -332,7 +332,7 @@ def main():
         GOAL_REASON = "FORCED STOP - TIMEOUT"
         logging.info(f"ゴール判定:{GOAL_REASON}")
     except Exception as e:
-        logging.critical(e)
+        logging.critical(f"エラーによる強制終了:{e}")
     finally:
             if cm is not None:
                 cm.disconnect()
@@ -340,7 +340,6 @@ def main():
                 mv.cleanup()
             if gps is not None:
                 gps.disconnect()
-            logging.critical(f"エラーによる強制終了:{e}")
 
 if __name__ == "__main__":
     main()
