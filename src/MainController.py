@@ -46,7 +46,7 @@ stop_event = threading.Event()
 
 def forced_stop():
     time.sleep(constants.INTERRUPTED_TIME)
-    raise error.FORCED_STOP
+    _thread.interrupt_main()
 
 
 def init():
@@ -325,9 +325,12 @@ def main():
                 if gps is not None:
                     gps.disconnect()
                 break
-    except error.FORCED_STOP:
+    except KeyboardInterrupt:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
         logging.info(f"ゴール判定:{GOAL_REASON}")
+    except error.FORCED_STOP:
+        GOAL_REASON = "FORCED STOP - TIMEOUT"
+        logging.info(f"ゴール判定")
     except Exception as e:
         logging.critical(f"エラーによる強制終了:{e}")
     finally:
