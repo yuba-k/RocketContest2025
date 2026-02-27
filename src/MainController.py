@@ -185,7 +185,7 @@ def main():
                 start.awaiting()
                 # ミッション開始時間を記録
                 MISSION_START = time.monotonic()
-                threading.Timer(constants.INTERRUPTED_TIME, forced_stop).start()
+                threading.Thread(target=forced_stop).start()
                 # キャリア脱出
                 threading.Thread(target=mv.move, daemon=True).start()
                 logging.info("キャリア脱出")
