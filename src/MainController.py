@@ -105,26 +105,30 @@ def start_camera(picam):
 def approach_short(mv, picam, fm):
     cmd = ""
     cnt = 0
-    while not stop_event.is_set():
-        try:
-            frame = frame_q.get()
-        except queue.Empty:
-            continue
-        cmd, rs = imgProcess.imgprocess(frame)
-        picam.save(rs, f"../img/result/{cnt}test_cv2.jpg", camera2.COLOR_MODE.BGR)
-        if cmd == "goal":
-            mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
-            logging.info("ゴールしました")
-            send_fm(fm, "go-ru,simasita")
-            stop_event.set()
-        else:
-            if cmd == "search":
-                send_fm(fm, "sagasitemasu")
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "right")
+    try:
+        while not stop_event.is_set():
+            try:
+                frame = frame_q.get()
+            except queue.Empty:
+                continue
+            cmd, rs = imgProcess.imgprocess(frame)
+            picam.save(rs, f"../img/result/{cnt}test_cv2.jpg", camera2.COLOR_MODE.BGR)
+            if cmd == "goal":
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
+                logging.info("ゴールしました")
+                send_fm(fm, "go-ru,simasita")
+                stop_event.set()
             else:
-                send_fm(fm, "mituketa")
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
-        cnt += 1
+                if cmd == "search":
+                    send_fm(fm, "sagasitemasu")
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "right")
+                else:
+                    send_fm(fm, "mituketa")
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
+            cnt += 1
+    except Exception:
+        stop_event.set()
+        return
 
 def main():
     try:
@@ -147,13 +151,13 @@ def main():
 
         NEXT_STATE = state.STATE_INIT
         while True:
-            if MISSION_START is not None:
-                if time.monotonic() - MISSION_START > constants.INTERRUPTED_TIME:
-                    logging.info(f"{constants.INTERRUPTED_TIME}秒経過：強制ゴール判定")
-                    GOAL_REASON = "TIMEOUT"
-                    NEXT_STATE = state.STATE_GOAL
-            else:
-                pass
+            # if MISSION_START is not None:
+            #     if time.monotonic() - MISSION_START > constants.INTERRUPTED_TIME:
+            #         logging.info(f"{constants.INTERRUPTED_TIME}秒経過：強制ゴール判定")
+            #         GOAL_REASON = "TIMEOUT"
+            #         NEXT_STATE = state.STATE_GOAL
+            # else:
+            #     pass
             if NEXT_STATE == state.STATE_INIT:
                 logging.info("STATE_INIT")
                 try:
@@ -178,6 +182,7 @@ def main():
                 start.awaiting()
                 # ミッション開始時間を記録
                 MISSION_START = time.monotonic()
+                threading.Timer(constants.INTERRUPTED_TIME, _thread.interrupt_main).start()
                 # キャリア脱出
                 threading.Thread(target=mv.move, daemon=True).start()
                 logging.info("キャリア脱出")
