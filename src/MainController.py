@@ -46,7 +46,7 @@ stop_event = threading.Event()
 
 def forced_stop():
     time.sleep(constants.INTERRUPTED_TIME)
-    raise error.FORCES_STOP
+    raise error.FORCED_STOP
 
 
 def init():
@@ -87,8 +87,8 @@ def send_fm(fm,msg:str) -> None:
             fm.transmitFMMessage(msg)
         else:
             pass
-    except error.FORCES_STOP:
-        raise error.FORCES_STOP
+    except error.FORCED_STOP:
+        raise error.FORCED_STOP
 
 def start_camera(picam):
     i = 0
@@ -325,7 +325,7 @@ def main():
                 if gps is not None:
                     gps.disconnect()
                 break
-    except error.FORCES_STOP:
+    except error.FORCED_STOP:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
         logging.info(f"ゴール判定:{GOAL_REASON}")
     except Exception as e:

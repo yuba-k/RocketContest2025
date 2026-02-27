@@ -26,15 +26,15 @@ class FMemitter:
             self.i2c.write_byte_data(self.addr, 0, 0x0D)  # 終了コード
         except OSError as e:
             logger.error(f"OSerror:{e}")
-        except error.FORCES_STOP:
-            raise error.FORCES_STOP
+        except error.FORCED_STOP:
+            raise error.FORCED_STOP
 
     def transmitFMMessage(self, message):
         try:
             string = self._stringToAscii(message)
             self._sendDataViaI2C(string)
-        except error.FORCES_STOP:
-            raise error.FORCES_STOP
+        except error.FORCED_STOP:
+            raise error.FORCED_STOP
 
 def main():
     fm = FMemitter()

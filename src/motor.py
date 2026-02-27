@@ -178,8 +178,8 @@ class Motor:
                     time.sleep(0.02)
                 self.right_duty = self.left_duty = 0
                 self.changeFlag = True
-        except error.FORCES_STOP:
-            raise error.FORCES_STOP
+        except error.FORCED_STOP:
+            raise error.FORCED_STOP
 
     def cleanup(self):
         self.running = False
