@@ -85,10 +85,13 @@ def init():
     return cm, mv, gps, fm
 
 def send_fm(fm,msg:str) -> None:
-    if flag.fm_available:
-        fm.transmitFMMessage(msg)
-    else:
-        pass
+    try:
+        if flag.fm_available:
+            fm.transmitFMMessage(msg)
+        else:
+            pass
+    except error.FORCES_STOP:
+        raise error.FORCES_STOP
 
 def start_camera(picam):
     i = 0
@@ -126,6 +129,9 @@ def approach_short(mv, picam, fm):
                     send_fm(fm, "mituketa")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
             cnt += 1
+    except error.FORCES_STOP:
+        stop_event.set()
+        raise error.FORCES_STOP
     except Exception:
         stop_event.set()
         return
@@ -322,7 +328,11 @@ def main():
                 if gps is not None:
                     gps.disconnect()
                 break
+    except error.FORCES_STOP:
+        GOAL_REASON = "FORCED STOP - TIMEOUT"
     except Exception as e:
+        logging.critical(e)
+    finally:
             if cm is not None:
                 cm.disconnect()
             if mv is not None:
