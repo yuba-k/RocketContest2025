@@ -9,6 +9,7 @@ import RPi.GPIO as GPIO
 import configloading
 import constants
 import pid_controller
+import error
 
 logger = logging.getLogger(__name__)
 
@@ -114,68 +115,71 @@ class Motor:
                 self.changeFlag = True
 
     def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None):
-        if mode == ADJUST_DUTY_MODE.DIRECTION_TIME:
-            if direction == "forward":
-                self.right_duty = self.duty
-                self.left_duty = self.duty
-            elif direction == "right" or direction == "search":
-                self.right_duty = self.duty * 0.6
-                self.left_duty = self.duty
-            elif direction == "left":
-                self.right_duty = self.duty * 1.0
-                self.left_duty = self.duty * 0.6
-            else:
-                self.right_duty = self.left_duty = 0
-            self.changeFlag = True
-            while time.monotonic() < self._stop_time:
-                time.sleep(0.02)
-            logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
-        elif mode == ADJUST_DUTY_MODE.DIRECTION:
-            if direction == "forward":
-                self.right_duty = self.duty
-                self.left_duty = self.duty
-            elif direction == "right" or direction == "search":
-                self.right_duty = self.duty * 0.6
-                self.left_duty = self.duty
-            elif direction == "left":
-                self.right_duty = self.duty * 1.0
-                self.left_duty = self.duty * 0.6
-            else:
-                self.right_duty = self.left_duty = 0
-            logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
-            self.changeFlag = True
-        elif mode == ADJUST_DUTY_MODE.ANGLE:
-            if sec < 4:
-                raise ValueError(f"引数secが短すぎます:{sec}\nsecは4秒以上")
-            count = 0
-            div = target_angle / 90
-            self.rotate_to_angle_pid(target_angle, sec, 5, 3)
-            # if div <= 1:
-            #     self.rotate_to_angle_pid(target_angle, sec, stable_count_threshold = 5,stable_error=3)
-            # else:
-            #     sec1, sec2 = 8, sec-4
-            #     threshold1, threshold2 = 1, 5
-            #     for dis_angle, sec, threshold, err in zip([90,target_angle-90],[sec1,sec2],[threshold1,threshold2],[5,3]):
-            #         print(dis_angle,sec,threshold)
-            #         self.rotate_to_angle_pid(dis_angle, sec, threshold,err)
-        elif mode == ADJUST_DUTY_MODE.STRAIGHT:
-            self.gyroangle.start()
-            self.pid.reset(setpoint=0) 
-            with self._lock:
-                if sec is not None:
-                    self._stop_time = time.monotonic() + sec
-            while time.monotonic() < self._stop_time:
-                gyrodata = self.gyroangle.get_angle()
-                correction = self.pid.calc(pid_controller.wrap_deg(gyrodata))
-                
+        try:
+            if mode == ADJUST_DUTY_MODE.DIRECTION_TIME:
+                if direction == "forward":
+                    self.right_duty = self.duty
+                    self.left_duty = self.duty
+                elif direction == "right" or direction == "search":
+                    self.right_duty = self.duty * 0.6
+                    self.left_duty = self.duty
+                elif direction == "left":
+                    self.right_duty = self.duty * 1.0
+                    self.left_duty = self.duty * 0.6
+                else:
+                    self.right_duty = self.left_duty = 0
+                self.changeFlag = True
+                while time.monotonic() < self._stop_time:
+                    time.sleep(0.02)
+                logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
+            elif mode == ADJUST_DUTY_MODE.DIRECTION:
+                if direction == "forward":
+                    self.right_duty = self.duty
+                    self.left_duty = self.duty
+                elif direction == "right" or direction == "search":
+                    self.right_duty = self.duty * 0.6
+                    self.left_duty = self.duty
+                elif direction == "left":
+                    self.right_duty = self.duty * 1.0
+                    self.left_duty = self.duty * 0.6
+                else:
+                    self.right_duty = self.left_duty = 0
+                logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
+                self.changeFlag = True
+            elif mode == ADJUST_DUTY_MODE.ANGLE:
+                if sec < 4:
+                    raise ValueError(f"引数secが短すぎます:{sec}\nsecは4秒以上")
+                count = 0
+                div = target_angle / 90
+                self.rotate_to_angle_pid(target_angle, sec, 5, 3)
+                # if div <= 1:
+                #     self.rotate_to_angle_pid(target_angle, sec, stable_count_threshold = 5,stable_error=3)
+                # else:
+                #     sec1, sec2 = 8, sec-4
+                #     threshold1, threshold2 = 1, 5
+                #     for dis_angle, sec, threshold, err in zip([90,target_angle-90],[sec1,sec2],[threshold1,threshold2],[5,3]):
+                #         print(dis_angle,sec,threshold)
+                #         self.rotate_to_angle_pid(dis_angle, sec, threshold,err)
+            elif mode == ADJUST_DUTY_MODE.STRAIGHT:
+                self.gyroangle.start()
+                self.pid.reset(setpoint=0) 
                 with self._lock:
-                    self.right_duty = self.baseduty - correction
-                    self.left_duty = self.baseduty + correction
-                    self.changeFlag = True
+                    if sec is not None:
+                        self._stop_time = time.monotonic() + sec
+                while time.monotonic() < self._stop_time:
+                    gyrodata = self.gyroangle.get_angle()
+                    correction = self.pid.calc(pid_controller.wrap_deg(gyrodata))
                     
-                time.sleep(0.02)
-            self.right_duty = self.left_duty = 0
-            self.changeFlag = True
+                    with self._lock:
+                        self.right_duty = self.baseduty - correction
+                        self.left_duty = self.baseduty + correction
+                        self.changeFlag = True
+                        
+                    time.sleep(0.02)
+                self.right_duty = self.left_duty = 0
+                self.changeFlag = True
+        except error.FORCES_STOP:
+            raise error.FORCES_STOP
 
     def cleanup(self):
         self.running = False

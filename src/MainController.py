@@ -44,12 +44,9 @@ class flag:
 frame_q = queue.Queue(maxsize=1)
 stop_event = threading.Event()
 
-def forced_stop(runtime: int):
-    logging.info(f"強制終了命令をセット:{runtime}s")
-    fintime = time.time() + runtime
-    while fintime - time.time() > 0:
-        time.sleep(10)
-    _thread.interrupt_main()
+def forced_stop():
+    time.sleep(constants.INTERRUPTED_TIME)
+    raise error.FORCES_STOP
 
 
 def init():
@@ -188,7 +185,7 @@ def main():
                 start.awaiting()
                 # ミッション開始時間を記録
                 MISSION_START = time.monotonic()
-                threading.Timer(constants.INTERRUPTED_TIME, _thread.interrupt_main).start()
+                threading.Timer(constants.INTERRUPTED_TIME, forced_stop).start()
                 # キャリア脱出
                 threading.Thread(target=mv.move, daemon=True).start()
                 logging.info("キャリア脱出")
