@@ -12,3 +12,6 @@ class ERROR_GPS_CANNOT_CONNECTION(Exception):
 
 class ERROR_FM_INIT(Exception):
     pass
+
+class FORCES_STOP(Exception):
+    pass

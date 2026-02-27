@@ -5,6 +5,7 @@ import RPi.GPIO
 import smbus
 
 import constants
+import error
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +26,15 @@ class FMemitter:
             self.i2c.write_byte_data(self.addr, 0, 0x0D)  # 終了コード
         except OSError as e:
             logger.error(f"OSerror:{e}")
+        except error.FORCES_STOP:
+            raise error.FORCES_STOP
 
     def transmitFMMessage(self, message):
-        string = self._stringToAscii(message)
-        self._sendDataViaI2C(string)
-
+        try:
+            string = self._stringToAscii(message)
+            self._sendDataViaI2C(string)
+        except error.FORCES_STOP:
+            raise error.FORCES_STOP
 
 def main():
     fm = FMemitter()
