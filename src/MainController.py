@@ -330,6 +330,7 @@ def main():
                 break
     except error.FORCES_STOP:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
+        logging.info(f"ゴール判定:{GOAL_REASON}")
     except Exception as e:
         logging.critical(e)
     finally:
