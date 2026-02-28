@@ -5,6 +5,7 @@ import time
 from enum import Enum, auto
 import threading
 import queue
+import cv2
 
 import camera2
 import constants
@@ -42,6 +43,7 @@ class flag:
     waypoint_reached = False#中継地点到達の有無(T:到達済み/回り込まない，F:未到達/順光側経由)
 
 frame_q = queue.Queue(maxsize=1)
+save_q = queue.Queue(maxsize=10)
 stop_event = threading.Event()
 
 def forced_stop():
@@ -90,6 +92,12 @@ def send_fm(fm,msg:str) -> None:
     except error.FORCED_STOP:
         raise error.FORCED_STOP
 
+def save_worker():
+    while not stop_event.is_set():
+        im, fullpath = save_q.get()
+        cv2.imwrite(fullpath, im)
+        save_q.task_done()
+
 def start_camera(picam):
     i = 0
     while not stop_event.is_set():
@@ -112,7 +120,7 @@ def approach_short(mv, picam, fm):
             except queue.Empty:
                 continue
             cmd, rs = imgProcess.imgprocess(frame)
-            picam.save(rs, f"../img/result/{cnt}test_cv2.jpg", camera2.COLOR_MODE.BGR)
+            save_q.put_nowait((rs, f"../img/result/{cnt}test_cv2.jpg"))
             if cmd == "goal":
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
                 logging.info("ゴールしました")
@@ -264,12 +272,16 @@ def main():
                 )
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_TARGET_DETECTION:
+                save_thread = threading.Thread(target=save_worker, daemon=True)
+                save_thread.start()
+
                 cam_thread = threading.Thread(target=start_camera, args=(cm,), daemon=True)
                 cam_thread.start()
 
                 imgdetect_thread = threading.Thread(target=approach_short, args=(mv, cm, fm), daemon=True)
                 imgdetect_thread.start()
-
+                
+                save_thread.join()
                 cam_thread.join()
                 imgdetect_thread.join()
                 GOAL_REASON = "SuccesufulAllPhase"
