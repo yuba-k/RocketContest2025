@@ -107,9 +107,10 @@ def start_camera(picam):
             if frame_q.full():
                 frame_q.get_nowait()
             frame_q.put_nowait(frame)
-            if save_q.full():
-                save_q.get_nowait()
-            save_q.put_nowait((frame,f"../img/default/cap_{i}.jpg"))
+            try:
+                save_q.put_nowait((frame,f"../img/default/cap_{i}.jpg"))
+            except queue.Full:
+                pass
         except queue.Full:
             pass
 
@@ -118,36 +119,34 @@ def approach_short(mv, picam, fm):
     cnt = 0
     try:
         while not stop_event.is_set():
-            #start = time.perf_counter()
             frame = None
             while not frame_q.empty():
                 frame = frame_q.get_nowait()
             if frame is None:
                 continue
-            #st = time.perf_counter()
             cmd, rs = imgProcess.imgprocess(frame)
-            #print(f"画像処理:{time.perf_counter()-st}")
-            #st = time.perf_counter()
-            save_q.put_nowait((rs, f"../img/result/{cnt}test_cv2.jpg"))
-            #print(time.perf_counter()-st)
+            try:
+                save_q.put_nowait((rs, f"../img/result/{cnt}test_cv2.jpg"))
+            except queue.Full:
+                pass
             if cmd == "goal":
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
                 logging.info("ゴールしました")
-            #    send_fm(fm, "go-ru,simasita")
+                send_fm(fm, "go-ru,simasita")
                 stop_event.set()
             else:
                 if cmd == "search":
-            #        send_fm(fm, "sagasitemasu")
+                    send_fm(fm, "sagasitemasu")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "right")
                 else:
                     send_fm(fm, "mituketa")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
             cnt += 1
-            #print(f"全体:{time.perf_counter()-start}")
     except error.FORCED_STOP:
         stop_event.set()
         raise error.FORCED_STOP
-    except Exception:
+    except Exception as e:
+        logging.error(e)
         stop_event.set()
         return
 

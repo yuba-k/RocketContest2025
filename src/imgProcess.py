@@ -69,7 +69,7 @@ def get_target_points2(binary, img):
     countors, _ = cv2.findContours(
         binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS
     )
-    if countors == ():
+    if countors == []:
         cv2.putText(img, text = "there is not", org = (100,100), fontFace = cv2.FONT_HERSHEY_SIMPLEX, fontScale = 1, color = (0,0,0), thickness = 3)
         return "ERROR", img
     for c in countors:
