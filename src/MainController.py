@@ -108,7 +108,7 @@ def approach_short(mv, picam, fm):
     try:
         while not stop_event.is_set():
             try:
-                frame = frame_q.get()
+                frame = frame_q.get_nowait()
             except queue.Empty:
                 continue
             cmd, rs = imgProcess.imgprocess(frame)
