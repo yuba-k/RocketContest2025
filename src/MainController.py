@@ -107,6 +107,9 @@ def start_camera(picam):
             if frame_q.full():
                 frame_q.get_nowait()
             frame_q.put_nowait(frame)
+            if save_q.full():
+                save_q.get_nowait()
+            save_q.put_nowait((frame,f"../img/default/cap_{i}.jpg"))
         except queue.Full:
             pass
 
