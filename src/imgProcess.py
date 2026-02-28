@@ -143,13 +143,15 @@ def detect_objects_long_range(img):
 
 
 def main():
-    path = "../img/original"
+    path = "../img/default"
     files = os.listdir(path)
     for fname in files:
         try:
             read_img = cv2.imread(os.path.join(path, fname))
+            st = time.perf_counter()
             _, img = imgprocess(cv2.cvtColor(read_img, cv2.COLOR_BGR2RGB))
             cv2.imwrite(os.path.join("../img/result", fname), img)
+            print(time.perf_counter()-st)
         except KeyboardInterrupt:
             print("KeyboardInterrupt")
 

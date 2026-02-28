@@ -115,25 +115,32 @@ def approach_short(mv, picam, fm):
     cnt = 0
     try:
         while not stop_event.is_set():
-            try:
+            #start = time.perf_counter()
+            frame = None
+            while not frame_q.empty():
                 frame = frame_q.get_nowait()
-            except queue.Empty:
+            if frame is None:
                 continue
+            #st = time.perf_counter()
             cmd, rs = imgProcess.imgprocess(frame)
+            #print(f"画像処理:{time.perf_counter()-st}")
+            #st = time.perf_counter()
             save_q.put_nowait((rs, f"../img/result/{cnt}test_cv2.jpg"))
+            #print(time.perf_counter()-st)
             if cmd == "goal":
                 mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
                 logging.info("ゴールしました")
-                send_fm(fm, "go-ru,simasita")
+            #    send_fm(fm, "go-ru,simasita")
                 stop_event.set()
             else:
                 if cmd == "search":
-                    send_fm(fm, "sagasitemasu")
+            #        send_fm(fm, "sagasitemasu")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "right")
                 else:
                     send_fm(fm, "mituketa")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
             cnt += 1
+            #print(f"全体:{time.perf_counter()-start}")
     except error.FORCED_STOP:
         stop_event.set()
         raise error.FORCED_STOP
@@ -202,7 +209,7 @@ def main():
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION_TIME, "forward", sec=(s := 10))
-                NEXT_STATE = state.STATE_WAIT_GPS_FIX
+                NEXT_STATE = state.STATE_TARGET_DETECTION
             elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
                 logging.info("STATE_WAIT_GPS_FIX")
                 while True:

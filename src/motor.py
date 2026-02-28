@@ -215,16 +215,21 @@ def main():
                 raise KeyboardInterrupt
 
             try:
-                target_angle = (cmd)
+                target_angle = int(cmd)
             except ValueError:
                 print("Invalid input")
                 continue
-
-            motor.adjust_duty_cycle(
-                ADJUST_DUTY_MODE.DIRECTION,
-                direction=target_angle,
-                sec=10
-            )
+            if target_angle == 0:
+                motor.adjust_duty_cycle(
+                        ADJUST_DUTY_MODE.STRAIGHT,
+                        sec=10
+                )
+            else:
+                 motor.adjust_duty_cycle(
+                     ADJUST_DUTY_MODE.ANGLE,
+                     target_angle=target_angle,
+                     sec=10
+                 )
            # time.sleep(5)
 
     except KeyboardInterrupt:
