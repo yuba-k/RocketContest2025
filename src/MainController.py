@@ -126,9 +126,9 @@ def approach_short(mv, picam, fm):
                     send_fm(fm, "mituketa")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
             cnt += 1
-    except error.FORCES_STOP:
+    except error.FORCED_STOP:
         stop_event.set()
-        raise error.FORCES_STOP
+        raise error.FORCED_STOP
     except Exception:
         stop_event.set()
         return
