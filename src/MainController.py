@@ -102,6 +102,7 @@ def start_camera(picam):
     i = 0
     while not stop_event.is_set():
         frame = picam.cap(cnt=i)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         i += 1
         try:
             if frame_q.full():

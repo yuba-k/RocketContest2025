@@ -25,7 +25,7 @@ class Camera:
             self.picam.configure(
                 self.picam.create_preview_configuration(
                     main={
-                        "format": "BGR888",
+                        "format": "BGRs888",
                         "size": (constants.WIDTH, constants.HEIGHT),
                     }
                 )
