@@ -129,8 +129,9 @@ class Motor:
                 else:
                     self.right_duty = self.left_duty = 0
                 self.changeFlag = True
+                while time.monotonic() < self._stop_time:
+                    time.sleep(0.02)
                 logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
-                time.sleep()
             elif mode == ADJUST_DUTY_MODE.DIRECTION:
                 if direction == "forward":
                     self.right_duty = self.duty
