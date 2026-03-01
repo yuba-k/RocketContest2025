@@ -123,11 +123,10 @@ def approach_short(mv, picam, fm):
             frame = None
             # while not frame_q.empty():
             #     frame = frame_q.get_nowait()
-            if frame_dq:
-                frame = frame_dq.popleft()
-            else:
+            if not frame_dq:
                 time.sleep(0.01)
                 continue
+            frame = frame_dq.popleft()
             cmd, rs = imgProcess.imgprocess(frame)
             try:
                 save_q.put_nowait((rs, f"../img/result/{cnt}test_cv2.jpg"))
