@@ -42,6 +42,7 @@ class Motor:
 
         self.running = True
         self.changeFlag = False
+        self.duty_pair = (0,0)
         self._lock = threading.Lock()
         self._stop_time = 0
         self._setup_gpio()
