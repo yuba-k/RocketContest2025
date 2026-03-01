@@ -44,7 +44,7 @@ class flag:
     waypoint_reached = False#中継地点到達の有無(T:到達済み/回り込まない，F:未到達/順光側経由)
 
 # frame_q = queue.Queue(maxsize=1)
-# save_q = queue.Queue(maxsize=10)
+save_q = queue.Queue(maxsize=10)
 frame_dq = deque(maxlen=1)
 stop_event = threading.Event()
 
@@ -123,8 +123,10 @@ def approach_short(mv, picam, fm):
             frame = None
             # while not frame_q.empty():
             #     frame = frame_q.get_nowait()
-            frame = frame_dq.popleft()
-            if frame is None:
+            if frame_dq:
+                frame = frame_dq.popleft()
+            else:
+                time.sleep(0.01)
                 continue
             cmd, rs = imgProcess.imgprocess(frame)
             try:
