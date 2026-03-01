@@ -140,7 +140,7 @@ class Motor:
                     self.right_duty = self.duty * 0.6
                     self.left_duty = self.duty
                 elif direction == "left":
-                    self.right_duty = self.duty * 1.0
+                    self.right_duty = self.duty
                     self.left_duty = self.duty * 0.6
                 else:
                     self.right_duty = self.left_duty = 0
