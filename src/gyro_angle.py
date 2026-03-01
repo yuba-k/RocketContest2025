@@ -6,6 +6,7 @@ import logging
 
 import board
 import error
+import constants
 from adafruit_lsm6ds.lsm6ds33 import LSM6DS33
 from adafruit_lsm6ds import Rate, GyroRange
 
@@ -15,7 +16,7 @@ class GYRO:
     def __init__(self, sample_rate=0.01):
         try:
             i2c = board.I2C()
-            self.sensor = LSM6DS33(i2c)
+            self.sensor = LSM6DS33(i2c,address=constants.IMU_ADDR)
 
             self._calibrate()
             self.sensor.gyro_data_rate = Rate.RATE_416_HZ
