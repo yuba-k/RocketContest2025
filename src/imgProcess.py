@@ -122,7 +122,7 @@ def merge_chunks(chunks, original_shape, size):
 
 
 def imgprocess(img):
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+#    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     chunk = (img.shape[0], img.shape[1] // 4)
     afImg = split_by_size(hsv, chunk)
