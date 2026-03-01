@@ -5,6 +5,7 @@ import time
 from enum import Enum, auto
 import threading
 import queue
+from collections import deque
 import cv2
 
 import camera2
@@ -42,8 +43,9 @@ class flag:
     fm_available = True
     waypoint_reached = False#中継地点到達の有無(T:到達済み/回り込まない，F:未到達/順光側経由)
 
-frame_q = queue.Queue(maxsize=1)
-save_q = queue.Queue(maxsize=10)
+# frame_q = queue.Queue(maxsize=1)
+# save_q = queue.Queue(maxsize=10)
+frame_dq = deque(maxlen=1)
 stop_event = threading.Event()
 
 def forced_stop():
@@ -105,15 +107,13 @@ def start_camera(picam):
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         i += 1
         try:
-            if frame_q.full():
-                frame_q.get_nowait()
-            frame_q.put_nowait(frame)
-            try:
-                save_q.put_nowait((frame,f"../img/default/cap_{i}.jpg"))
-            except queue.Full:
-                pass
+            # if frame_q.full():
+            #     frame_q.get_nowait()
+            # frame_q.put_nowait(frame)
+            frame_dq.append(frame)
         except queue.Full:
             pass
+        time.sleep(0.01)
 
 def approach_short(mv, picam, fm):
     cmd = ""
@@ -121,8 +121,9 @@ def approach_short(mv, picam, fm):
     try:
         while not stop_event.is_set():
             frame = None
-            while not frame_q.empty():
-                frame = frame_q.get_nowait()
+            # while not frame_q.empty():
+            #     frame = frame_q.get_nowait()
+            frame = frame_dq.popleft()
             if frame is None:
                 continue
             cmd, rs = imgProcess.imgprocess(frame)
