@@ -64,15 +64,15 @@ class Motor:
         GPIO.output(self.right_phase, GPIO.LOW)
         GPIO.output(self.left_phase, GPIO.LOW)
         while self.running:
-            with self._lock:
                # if self._stop_time > 0 and time.monotonic() > self._stop_time:
                #     self._stop_time = 0
                #     self.right_duty = self.left_duty = 0
                #     self.changeFlag = True
-                if self.changeFlag:
-                    self.changeFlag = False
-                    self.right.ChangeDutyCycle(self.right_duty)
-                    self.left.ChangeDutyCycle(self.left_duty)
+            if self.changeFlag:
+                self.changeFlag = False
+                right, left = self.duty_pair
+                self.right.ChangeDutyCycle(right)
+                self.left.ChangeDutyCycle(left)
             time.sleep(0.01)
 
     def rotate_to_angle_pid(self, target_angle:float, sec:float, stable_count_threshold:int,stable_error:int):
@@ -89,18 +89,16 @@ class Motor:
             gyrodata = self.gyroangle.get_angle()
             pidout = self.pid.calc(gyrodata)
             print(gyrodata, pidout)
-            with self._lock:
-                self.right_duty = self.baseduty - pidout
-                self.left_duty = self.baseduty + pidout
-                self.changeFlag = True
+            self.duty_pair = (self.baseduty - pidout,self.baseduty + pidout)
+            self.changeFlag = True
             logger.debug(
-                f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.right_duty},{self.left_duty}"
+                f"Target:{target_angle},Gyro:{gyrodata},Duty:{self.duty_pair[0]},{self.duty_pair[1]}"
             )
             error = target_angle - gyrodata
             if abs(error) < stable_error:
                 count += 1
                 if count > stable_count_threshold:
-                    self.right_duty = self.left_duty = 0
+                    self.duty_pair = (0,0)
                     self.changeFlag = True
                     self._stop_time = time.monotonic() - 1
                     self.gyroangle.stop()
@@ -110,41 +108,34 @@ class Motor:
                 count = 0
             time.sleep(0.01)
         else:
-            with self._lock:
-                self.right_duty = self.left_duty = 0
-                self.changeFlag = True
+            self.duty_pair = (0,0)
+            self.changeFlag = True
 
     def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None):
         try:
             if mode == ADJUST_DUTY_MODE.DIRECTION_TIME:
                 if direction == "forward":
-                    self.right_duty = self.duty
-                    self.left_duty = self.duty
+                    self.duty_pair = (self.duty, self.duty)
                 elif direction == "right" or direction == "search":
-                    self.right_duty = self.duty * 0.6
-                    self.left_duty = self.duty
+                    self.duty_pair = (self.duty * 0.6, self.duty)
                 elif direction == "left":
-                    self.right_duty = self.duty * 1.0
-                    self.left_duty = self.duty * 0.6
+                    self.duty_pair = (self.duty, self.duty * 0.6)
                 else:
-                    self.right_duty = self.left_duty = 0
+                    self.duty_pair(0,0)
                 self.changeFlag = True
                 while time.monotonic() < self._stop_time:
                     time.sleep(0.02)
-                logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
+                logger.info(f"Direction:{direction},Duty:{self.duty_pair[0]},{self.duty_pair[1]}")
             elif mode == ADJUST_DUTY_MODE.DIRECTION:
                 if direction == "forward":
-                    self.right_duty = self.duty
-                    self.left_duty = self.duty
+                    self.duty_pair = (self.duty, self.duty)
                 elif direction == "right" or direction == "search":
-                    self.right_duty = self.duty * 0.6
-                    self.left_duty = self.duty
+                    self.duty_pair = (self.duty * 0.6, self.duty)
                 elif direction == "left":
-                    self.right_duty = self.duty
-                    self.left_duty = self.duty * 0.6
+                    self.duty_pair = (self.duty, self.duty * 0.6)
                 else:
-                    self.right_duty = self.left_duty = 0
-                logger.info(f"Direction:{direction},Duty:{self.left_duty},{self.right_duty}")
+                    self.duty_pair = (0,0)
+                logger.info(f"Direction:{direction},Duty:{self.duty_pair[0]},{self.duty_pair[1]}")
                 self.changeFlag = True
             elif mode == ADJUST_DUTY_MODE.ANGLE:
                 if sec < 4:
@@ -169,14 +160,11 @@ class Motor:
                 while time.monotonic() < self._stop_time:
                     gyrodata = self.gyroangle.get_angle()
                     correction = self.pid.calc(pid_controller.wrap_deg(gyrodata))
-                    
-                    with self._lock:
-                        self.right_duty = self.baseduty - correction
-                        self.left_duty = self.baseduty + correction
-                        self.changeFlag = True
+                    self.duty_pair = (self.baseduty - correction, self.baseduty + correction)
+                    self.changeFlag = True
                         
                     time.sleep(0.02)
-                self.right_duty = self.left_duty = 0
+                self.duty_pair = (0, 0)
                 self.changeFlag = True
         except KeyboardInterrupt:
             raise error.FORCED_STOP
