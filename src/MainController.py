@@ -132,16 +132,16 @@ def approach_short(mv, picam, fm):
                 save_q.put_nowait((rs, f"../img/result/{cnt}test_cv2.jpg"))
             except queue.Full:
                 pass
-            if cmd == "goal":
-                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
-                logging.info("ゴールしました")
-                send_fm(fm, "go-ru,simasita")
-                stop_event.set()
-            else:
-                if cmd == "search":
+            match cmd:
+                case "goal":
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
+                    logging.info("ゴールしました")
+                    send_fm(fm, "go-ru,simasita")
+                    stop_event.set()
+                case "search":
                     send_fm(fm, "sagasitemasu")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "right")
-                else:
+                case _:
                     send_fm(fm, "mituketa")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
             cnt += 1
