@@ -112,7 +112,11 @@ class Motor:
             self.duty_pair = (0,0)
             self.changeFlag = True
 
-    def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None):
+    def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None, duty = None):
+        if duty is not None:
+            self.duty = duty
+        else:
+            self.duty = constants.DUTY
         try:
             if mode == ADJUST_DUTY_MODE.DIRECTION_TIME:
                 if direction == "forward":
