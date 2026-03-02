@@ -284,6 +284,7 @@ def main():
                 )
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_TARGET_DETECTION:
+                logging.info("STATE_TARGET_DETECTION")
                 save_thread = threading.Thread(target=save_worker, daemon=True)
                 save_thread.start()
 
@@ -293,6 +294,8 @@ def main():
                 imgdetect_thread = threading.Thread(target=approach_short, args=(mv, cm, fm), daemon=True)
                 imgdetect_thread.start()
                 
+                imgdetect_thread.join()
+
                 GOAL_REASON = "SuccesufulAllPhase"
                 NEXT_STATE = state.STATE_GOAL
             # elif NEXT_STATE == state.STATE_GET_PHOTO:
