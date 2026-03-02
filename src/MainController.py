@@ -50,6 +50,8 @@ stop_event = threading.Event()
 
 def forced_stop():
     time.sleep(constants.INTERRUPTED_TIME)
+    logging.warning("強制停止タイマー起動")
+    stop_event.set()
     _thread.interrupt_main()
 
 
