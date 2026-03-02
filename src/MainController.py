@@ -344,10 +344,13 @@ def main():
                 logging.info(f"ゴール判定:{GOAL_REASON}")
                 if cm is not None:
                     cm.disconnect()
+                    cm  = None
                 if mv is not None:
                     mv.cleanup()
+                    mv = None
                 if gps is not None:
                     gps.disconnect()
+                    gps = None
                 break
     except KeyboardInterrupt:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
