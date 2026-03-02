@@ -136,13 +136,13 @@ def approach_short(mv, picam, fm):
                 case "goal":
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
                     logging.info("ゴールしました")
-                    send_fm(fm, "go-ru,simasita")
+                    send_fm(fm, "go'-ru+_sima'_sita")
                     stop_event.set()
                 case "search":
-                    send_fm(fm, "sagasitemasu")
+                    send_fm(fm, "go'-ru do'ko--")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "right")
                 case _:
-                    send_fm(fm, "mituketa")
+                    send_fm(fm, "mitu'ketayo'")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
             cnt += 1
     except error.FORCED_STOP:
@@ -201,7 +201,7 @@ def main():
                 NEXT_STATE = state.STATE_WAIT_DEPLOYMENT
             elif NEXT_STATE == state.STATE_WAIT_DEPLOYMENT:
                 logging.info("STATE_WAIT_DEPLOYMENT")
-                send_fm(fm, "taikityu-")
+                send_fm(fm, "tai'ki'chu'-de'_su")
                 start.awaiting()
                 # ミッション開始時間を記録
                 MISSION_START = time.monotonic()
@@ -209,7 +209,7 @@ def main():
                 # キャリア脱出
                 threading.Thread(target=mv.move, daemon=True).start()
                 logging.info("キャリア脱出")
-                send_fm(fm,"zensin,simasu")
+                send_fm(fm,"zen'si'n'")
                 if flag.gyro_available:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
@@ -218,18 +218,18 @@ def main():
             elif NEXT_STATE == state.STATE_WAIT_GPS_FIX:
                 logging.info("STATE_WAIT_GPS_FIX")
                 while True:
-                    send_fm(fm, "de-tasyutokutyu-")
+                    send_fm(fm, "de-ta,zyusintyu-")
                     lat, lon, satellites, utc_time, dop = gps.get_gps_data()
                     if lat is not None and lon is not None:
                         break
                     else:
                         logging.error("位置情報未受信")
-                    send_fm(fm,"iti,syutokutyuu")
+                    send_fm(fm,"de-ta,zyusintyu-")
                 logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
                 write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
                 if flag.gyro_available:
-                    send_fm(fm, "zensin-")
+                    send_fm(fm, "zen'si'n'")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION_TIME, "forward", sec=(s := 10))
@@ -238,7 +238,7 @@ def main():
                 logging.info("STATE_GET_GPS_DATA")
                 past_position = current_position.copy()
                 while True:
-                    send_fm(fm, "de-tasyutokutyu-")
+                    send_fm(fm, "de-tazyusintyu-")
                     lat, lon, satellites, utc_time, dop = gps.get_gps_data()
                     if lat is not None and lon is not None and gpsnew.is_correct(lat, lon, past_position):
                         break
