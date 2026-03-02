@@ -120,6 +120,27 @@ def merge_chunks(chunks, original_shape, size):
     merged = merged[:h, :w]
     return merged
 
+def apply_clahe(img):
+    """
+    BGR画像に対してLAB色空間でCLAHE（コントラスト補正）を適用する
+    """
+    # BGRからLABに変換
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+
+    # CLAHEオブジェクトの生成
+    # clipLimit: コントラスト制限の閾値（高いほどコントラストが強くなるがノイズも増える）
+    # tileGridSize: 領域分割の数
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    
+    # Lチャンネル（輝度）だけに適用
+    cl = clahe.apply(l)
+
+    # チャンネルを統合してBGRに戻す
+    limg = cv2.merge((cl, a, b))
+    final_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+    
+    return final_img
 
 def imgprocess(img):
 #    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
@@ -143,18 +164,20 @@ def detect_objects_long_range(img):
 
 
 def main():
-    path = "../img/default"
+    path = "../img/original"
     files = os.listdir(path)
+    time_save = []
     for fname in files:
         try:
             read_img = cv2.imread(os.path.join(path, fname))
             st = time.perf_counter()
-            _, img = imgprocess(cv2.cvtColor(read_img, cv2.COLOR_BGR2RGB))
+            _, img = imgprocess(read_img)
             cv2.imwrite(os.path.join("../img/result", fname), img)
-            print(time.perf_counter()-st)
+            time_save.append(time.perf_counter()-st)
+            print(time_save[-1])
         except KeyboardInterrupt:
             print("KeyboardInterrupt")
-
+    print(f"平均処理時間:{np.mean(time_save)}")
 
 if __name__ == "__main__":
     main()
