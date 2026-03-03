@@ -111,6 +111,7 @@ class Motor:
         else:
             self.duty_pair = (0,0)
             self.changeFlag = True
+            self.gyroangle.stop()
 
     def adjust_duty_cycle(self, mode, direction=None, target_angle=0, sec=None, duty = None):
         if duty is not None:
@@ -119,6 +120,7 @@ class Motor:
             self.duty = constants.DUTY
         try:
             if mode == ADJUST_DUTY_MODE.DIRECTION_TIME:
+                self._stop_time = time.monotonic() + sec
                 if direction == "forward":
                     self.duty_pair = (self.duty, self.duty)
                 elif direction == "right" or direction == "search":
@@ -171,6 +173,7 @@ class Motor:
                     time.sleep(0.02)
                 self.duty_pair = (0, 0)
                 self.changeFlag = True
+                self.gyroangle.stop()
         except KeyboardInterrupt:
             raise error.FORCED_STOP
 

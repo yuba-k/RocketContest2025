@@ -34,9 +34,9 @@ class GYRO:
     def _calibrate(self, samples = 1000):
         total = 0.0
         for _ in range(samples):
-            total += self.sensor.gyro[2]
+            total += math.degrees(self.sensor.gyro[2])
             time.sleep(1/416)
-        self.offset_z = math.degrees(total) / samples
+        self.offset_z = total / samples
 
     def _update_loop(self):
         last_time = time.perf_counter()
