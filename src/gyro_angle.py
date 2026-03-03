@@ -21,7 +21,7 @@ class GYRO:
             self.sensor.gyro_data_rate = Rate.RATE_208_HZ
             self.sensor.gyro_range = GyroRange.RANGE_2000_DPS
             self.sensor.high_performance = True
-            self.sensor.accelerometer_data_rate = Rate.STOP
+            self.sensor.accelerometer_data_rate = Rate.RATE_SHUTDOWN
             self._calibrate()
             self.alplha = 0.7
         except Exception as e:
