@@ -18,10 +18,9 @@ class GYRO:
             i2c = board.I2C()
             self.sensor = LSM6DS33(i2c,address=constants.IMU_ADDR)
 
-            self._calibrate()
             self.sensor.gyro_data_rate = Rate.RATE_416_HZ
             self.sensor.gyro_range = GyroRange.RANGE_250_DPS
-
+            self._calibrate()
             self.alplha = 0.7
         except Exception as e:
             logger.critical("6軸初期化エラー")
@@ -45,8 +44,9 @@ class GYRO:
             dt = current_time - last_time
 
             raw_z = math.degrees(self.sensor.gyro[2]) - self.offset_z
-            self.filtered = self.alplha * raw_z + (1-self.alplha) * self.filtered
-            self.gyro_z += self.filtered * dt
+            # self.filtered = self.alplha * raw_z + (1-self.alplha) * self.filtered
+            # self.gyro_z += self.filtered * dt
+            self.gyro_z += raw_z * dt
             
             last_time = current_time
             time.sleep(1/416)
