@@ -171,7 +171,7 @@ def calculate_target_distance_angle(
         return result
 
 def is_correct(lat, lon, previous_coordinate):
-    dist = math.sqrt((previous_coordinate["lat"] - lat)**2,(previous_coordinate["lon"] - lon)**2)
+    dist = math.sqrt((previous_coordinate["lat"] - lat)**2+(previous_coordinate["lon"] - lon)**2)
     if (dist >= 0.000003 and dist <= 0.000500):
         return True
     else:
