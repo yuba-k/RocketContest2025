@@ -18,7 +18,7 @@ class GYRO:
             i2c = board.I2C()
             self.sensor = LSM6DS33(i2c,address=constants.IMU_ADDR)
 
-            self.sensor.gyro_data_rate = Rate.RATE_208_HZ
+            self.sensor.gyro_data_rate = Rate.RATE_416_HZ
             self.sensor.gyro_range = GyroRange.RANGE_250_DPS
             self._calibrate()
             self.alplha = 0.7
@@ -34,7 +34,7 @@ class GYRO:
         total = 0.0
         for _ in range(samples):
             total += math.degrees(self.sensor.gyro[2])
-            time.sleep(0.05)
+            time.sleep(0.001)
         self.offset_z = total / samples
 
     def _update_loop(self):
@@ -49,7 +49,7 @@ class GYRO:
             self.gyro_z += raw_z * dt
             
             last_time = current_time
-            time.sleep(0.05)
+            time.sleep(0.001)
 
     def get_angle(self):
         return self.wrap_deg(self.gyro_z)
