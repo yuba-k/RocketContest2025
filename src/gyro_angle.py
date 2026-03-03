@@ -18,8 +18,8 @@ class GYRO:
             i2c = board.I2C()
             self.sensor = LSM6DS33(i2c,address=constants.IMU_ADDR)
 
-            self.sensor.gyro_data_rate = Rate.RATE_416_HZ
-            self.sensor.gyro_range = GyroRange.RANGE_500_DPS
+            self.sensor.gyro_data_rate = Rate.RATE_208_HZ
+            self.sensor.gyro_range = GyroRange.RANGE_250_DPS
             self._calibrate()
             self.alplha = 0.7
         except Exception as e:
