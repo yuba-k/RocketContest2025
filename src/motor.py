@@ -74,7 +74,7 @@ class Motor:
                 right, left = self.duty_pair
                 self.right.ChangeDutyCycle(right)
                 self.left.ChangeDutyCycle(left)
-            time.sleep(0.01)
+            time.sleep(0.005)
 
     def rotate_to_angle_pid(self, target_angle:float, sec:float, stable_count_threshold:int,stable_error:int):
         count = 0
