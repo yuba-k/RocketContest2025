@@ -15,13 +15,13 @@ st_pin_in = constants.ST_PIN_IN
 def init():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(st_pin_out, GPIO.OUT)
-    GPIO.setup(st_pin_in, GPIO.IN)
+    GPIO.setup(st_pin_in, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 
 def awaiting():
     GPIO.output(st_pin_out, GPIO.HIGH)
     while True:
-        value = GPIO.input(st_pin_out)
+        value = GPIO.input(st_pin_in)
         if value == 0:
             logger.info("Start Program")
             break
