@@ -141,10 +141,10 @@ def approach_short(mv, picam, fm):
                     send_fm(fm, "go'-ru+_sima'_sita")
                     stop_event.set()
                 case "search":
-                    send_fm(fm, "go'-ru do'ko--")
+                    #send_fm(fm, "go'-ru do'ko--")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "right")
                 case _:
-                    send_fm(fm, "mitu'ketayo'")
+                    #send_fm(fm, "mitu'ketayo'")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
             cnt += 1
     except error.FORCED_STOP:
