@@ -128,7 +128,7 @@ class Motor:
                 elif direction == "left":
                     self.duty_pair = (self.duty, self.duty * 0.6)
                 else:
-                    self.duty_pair(0,0)
+                    self.duty_pair = (0,0)
                 self.changeFlag = True
                 while time.monotonic() < self._stop_time:
                     time.sleep(0.02)
