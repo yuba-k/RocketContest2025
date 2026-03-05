@@ -222,8 +222,9 @@ def main():
                 )
             else:
                  motor.adjust_duty_cycle(
-                     ADJUST_DUTY_MODE.ANGLE,
-                     target_angle=target_angle,
+                     ADJUST_DUTY_MODE.DIRECTION_TIME,
+                     direction="forward",
+                     duty=target_angle,
                      sec=10
                  )
            # time.sleep(5)
