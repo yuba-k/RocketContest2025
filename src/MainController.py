@@ -163,8 +163,8 @@ def main():
         goal_position = {"lat":constants.GOAL_LAT,"lon":constants.GOAL_LON}
         """順光側経由設定注意
         lat:緯度 / lon:経度
-        午前中(太陽が東) -> lonを+0.000010(10m東)
-        午後(太陽が西) -> lonを-0.000010(10m西)
+        午前中(太陽が東) -> lonを+0.000020(20m東)
+        午後(太陽が西) -> lonを-0.000020(20m西)
         """
         relay_point = {"lat":constants.RELAY_LAT, "lon":constants.RELAY_LON}
         noimgcnt = 0
