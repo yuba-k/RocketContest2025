@@ -252,7 +252,7 @@ def main():
                 write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
                 calculate_result = gpsnew.calculate_target_distance_angle(
-                    current_position, past_position, target_position, 10
+                    current_position, past_position, target_position, 5
                 )
                 logging.info(f"deg:{calculate_result['deg']}\tdis:{calculate_result['distance']}")
                 if calculate_result["dir"] == "Immediate":
