@@ -27,5 +27,5 @@ def awaiting():
             break
         time.sleep(1)
     GPIO.output(st_pin_out, GPIO.LOW)
-    time.sleep(30)  # パラシュート展開後待機時間
+    time.sleep(20)  # パラシュート展開後待機時間
     return
