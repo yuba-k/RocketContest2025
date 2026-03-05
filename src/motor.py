@@ -178,6 +178,9 @@ class Motor:
             raise error.FORCED_STOP
 
     def cleanup(self):
+        self.duty_pair = (0,0)
+        self.changeFlag = True
+        time.sleep(1)
         self.running = False
         if self.gyroangle is not None:
             self.gyroangle.stop()
