@@ -4,6 +4,7 @@ src/img
 img/
 .vscode/
 manual/*.docx
+manual/*.pptx
 *.jpg
 memo.txt
 model/__pycache__
