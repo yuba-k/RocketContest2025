@@ -136,6 +136,7 @@ def approach_short(mv, picam, fm):
                 pass
             match cmd:
                 case "goal":
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION_TIME, "forward", sec=3, duty =50)#最後の突進
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
                     logging.info("ゴールしました")
                     send_fm(fm, "go'-ru+_sima'_sita")
