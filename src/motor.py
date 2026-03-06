@@ -123,10 +123,12 @@ class Motor:
                 self._stop_time = time.monotonic() + sec
                 if direction == "forward":
                     self.duty_pair = (self.duty, self.duty)
-                elif direction == "right" or direction == "search":
+                elif direction == "right":
                     self.duty_pair = (self.duty * 0.6, self.duty)
                 elif direction == "left":
                     self.duty_pair = (self.duty, self.duty * 0.6)
+                elif direction == "search":
+                    self.duty_pair = (self.duty * 0.8, self.duty)
                 else:
                     self.duty_pair = (0,0)
                 self.changeFlag = True
