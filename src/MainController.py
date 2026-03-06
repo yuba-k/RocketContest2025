@@ -37,7 +37,7 @@ class state(Enum):
 
 
 class flag:
-    gyro_available = True
+    gyro_available = False
     camera_available = True
     backlight_avoidance = True
     fm_available = True
@@ -164,7 +164,7 @@ def main():
         current_position = {"lat": 0.0, "lon": 0.0}
         past_position = {"lat": 0.0, "lon": 0.0}
         target_position = {"lat":0.0, "lon":0.0}
-        goal_position = {"lat":constants.GOAL_LAT,"lon":constants.GOAL_LON}
+        goal_position = {"lat":constants.GOAL_LAT-0.000020,"lon":constants.GOAL_LON-0.000020}
         """順光側経由設定注意
         lat:緯度 / lon:経度
         午前中(太陽が東) -> lonを+0.000020(20m東)
@@ -234,11 +234,12 @@ def main():
                 logging.info(f"初期位置:{lat},{lon}\t{satellites},{utc_time},{dop}")
                 write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
+                print(flag.gyro_available)
                 if flag.gyro_available:
                     send_fm(fm, "zen'si'n'")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.STRAIGHT, sec=(s := 10))
                 else:
-                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION_TIME, "forward", sec=(s := 10))
+                    mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION_TIME, "forward", sec=(s := 15))
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_GET_GPS_DATA:
                 logging.info("STATE_GET_GPS_DATA")
@@ -283,11 +284,13 @@ def main():
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_MOVE_DIRECTION:
                 logging.info("STATE_MOVE_DIRECTION")
+                print(5 * abs(calculate_result["deg"])/180)
                 mv.adjust_duty_cycle(
-                    motor.ADJUST_DUTY_MODE.DIRECTION,
+                    motor.ADJUST_DUTY_MODE.DIRECTION_TIME,
                     calculate_result["dir"],
                     sec = (s := 4 * abs(calculate_result["deg"]) / 180),
                 )
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION_TIME,"forward",sec=15)
                 NEXT_STATE = state.STATE_GET_GPS_DATA
             elif NEXT_STATE == state.STATE_TARGET_DETECTION:
                 logging.info("STATE_TARGET_DETECTION")
@@ -364,8 +367,8 @@ def main():
     except error.FORCED_STOP:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
         logging.info(f"ゴール判定")
-    except Exception as e:
-        logging.critical(f"エラーによる強制終了:{e}")
+#    except Exception as e:
+#        logging.critical(f"エラーによる強制終了:{e}")
     finally:
             if cm is not None:
                 cm.disconnect()

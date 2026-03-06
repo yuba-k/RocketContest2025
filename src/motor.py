@@ -135,6 +135,8 @@ class Motor:
                 while time.monotonic() < self._stop_time:
                     time.sleep(0.02)
                 logger.info(f"Direction:{direction},Duty:{self.duty_pair[0]},{self.duty_pair[1]}")
+                self.duty_pair = (0,0)
+                self.changeFlag = True
             elif mode == ADJUST_DUTY_MODE.DIRECTION:
                 if direction == "forward":
                     self.duty_pair = (self.duty, self.duty)
@@ -216,7 +218,7 @@ def main():
                 raise KeyboardInterrupt
 
             try:
-                target_angle = int(cmd)
+                target_angle = (cmd)
             except ValueError:
                 print("Invalid input")
                 continue
@@ -228,8 +230,7 @@ def main():
             else:
                  motor.adjust_duty_cycle(
                      ADJUST_DUTY_MODE.DIRECTION_TIME,
-                     direction="forward",
-                     duty=target_angle,
+                     direction=target_angle,
                      sec=10
                  )
            # time.sleep(5)
