@@ -37,7 +37,7 @@ class state(Enum):
 
 
 class flag:
-    gyro_available = False
+    gyro_available = True
     camera_available = True
     backlight_avoidance = True
     fm_available = True
@@ -367,15 +367,15 @@ def main():
     except error.FORCED_STOP:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
         logging.info(f"ゴール判定")
-#    except Exception as e:
-#        logging.critical(f"エラーによる強制終了:{e}")
+    except Exception as e:
+        logging.critical(f"エラーによる強制終了:{e}")
     finally:
-            if cm is not None:
-                cm.disconnect()
-            if mv is not None:
-                mv.cleanup()
-            if gps is not None:
-                gps.disconnect()
+        if cm is not None:
+            cm.disconnect()
+        if mv is not None:
+            mv.cleanup()
+        if gps is not None:
+            gps.disconnect()
 
 if __name__ == "__main__":
     main()
