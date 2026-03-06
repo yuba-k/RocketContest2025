@@ -148,6 +148,9 @@ def approach_short(mv, picam, fm):
                     #send_fm(fm, "mitu'ketayo'")
                     mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, cmd)
             cnt += 1
+            if cnt % 300 == 0:
+                mv.adjust_duty_cycle(motor.ADJUST_DUTY_MODE.DIRECTION, "stop")
+                time.sleep(0.5)
     except error.FORCED_STOP:
         stop_event.set()
         raise error.FORCED_STOP
