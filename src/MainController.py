@@ -165,6 +165,7 @@ def main():
         past_position = {"lat": 0.0, "lon": 0.0}
         target_position = {"lat":0.0, "lon":0.0}
         goal_position = {"lat":constants.GOAL_LAT-0.000020,"lon":constants.GOAL_LON-0.000020}
+        target_distance = 10
         """順光側経由設定注意
         lat:緯度 / lon:経度
         午前中(太陽が東) -> lonを+0.000020(20m東)
@@ -257,7 +258,7 @@ def main():
                 write_csv.write([lat,lon,satellites,utc_time,dop,"1"])
                 current_position = {"lat": lat, "lon": lon}
                 calculate_result = gpsnew.calculate_target_distance_angle(
-                    current_position, past_position, target_position, 10
+                    current_position, past_position, target_position, target_distance
                 )
                 logging.info(f"deg:{calculate_result['deg']}\tdis:{calculate_result['distance']}")
                 if calculate_result["dir"] == "Immediate":
@@ -266,6 +267,7 @@ def main():
                         logging.info("順光経由完了")
                         flag.waypoint_reached = True#順光側経由完了
                         target_position = goal_position#真のゴールへ
+                        target_distance = 8
                     elif flag.camera_available:
                         NEXT_STATE = state.STATE_TARGET_DETECTION
                     else:
