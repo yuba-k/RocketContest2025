@@ -347,6 +347,7 @@ def main():
             elif NEXT_STATE == state.ERROR:
                 logging.info("ERROR")
                 logging.critical("強制停止/異常によりプログラムを終了します")
+                GOAL_REASON = "FORCED_INTERREPT"
                 NEXT_STATE = state.STATE_GOAL
             elif NEXT_STATE == state.STATE_GOAL:
                 logging.info("STATE_GOAL")
