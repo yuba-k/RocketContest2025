@@ -365,9 +365,11 @@ def main():
     except KeyboardInterrupt:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
         logging.info(f"ゴール判定:{GOAL_REASON}")
+        send_fm(fm, "taimu,o-ba-")
     except error.FORCED_STOP:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
         logging.info(f"ゴール判定")
+        send_fm(fm, "taimu,o-ba-")
     except Exception as e:
         logging.critical(f"エラーによる強制終了:{e}")
     finally:
