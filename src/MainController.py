@@ -371,6 +371,7 @@ def main():
     except Exception as e:
         logging.critical(f"エラーによる強制終了:{e}")
     finally:
+        send_fm(fm, "go'-ru+_sima'_sita")
         if cm is not None:
             cm.disconnect()
         if mv is not None:
