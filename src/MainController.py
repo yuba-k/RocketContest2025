@@ -366,15 +366,18 @@ def main():
                 break
     except KeyboardInterrupt:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
+        time.sleep(5)
         logging.info(f"ゴール判定:{GOAL_REASON}")
         send_fm(fm, "taimu,o-ba-")
     except error.FORCED_STOP:
         GOAL_REASON = "FORCED STOP - TIMEOUT"
         logging.info(f"ゴール判定")
+        time.sleep(5)
         send_fm(fm, "taimu,o-ba-")
     except Exception as e:
         logging.critical(f"エラーによる強制終了:{e}")
     finally:
+        time.sleep(5)
         send_fm(fm, "go'-ru+_sima'_sita")
         if cm is not None:
             cm.disconnect()
