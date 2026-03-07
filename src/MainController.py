@@ -164,14 +164,14 @@ def main():
         current_position = {"lat": 0.0, "lon": 0.0}
         past_position = {"lat": 0.0, "lon": 0.0}
         target_position = {"lat":0.0, "lon":0.0}
-        goal_position = {"lat":constants.GOAL_LAT-0.000020,"lon":constants.GOAL_LON-0.000020}
+        goal_position = {"lat":constants.GOAL_LAT,"lon":constants.GOAL_LON}
         target_distance = 10
         """順光側経由設定注意
         lat:緯度 / lon:経度
         午前中(太陽が東) -> lonを+0.000020(20m東)
         午後(太陽が西) -> lonを-0.000020(20m西)
         """
-        relay_point = {"lat":constants.RELAY_LAT, "lon":constants.RELAY_LON}
+        relay_point = {"lat":constants.RELAY_LAT-0.000020, "lon":constants.RELAY_LON-0.000020}
         noimgcnt = 0
         imgcnt = 0
         cm = mv = gps = fm = None

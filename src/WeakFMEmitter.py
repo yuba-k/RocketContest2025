@@ -39,8 +39,9 @@ class FMemitter:
 def main():
     fm = FMemitter()
     while True:
-        string = input(">>>")
+        string = "go-rushimasita"#input(">>>")
         fm.transmitFMMessage(string)
+        time.sleep(5)
 
 
 if __name__ == "__main__":
